@@ -1,0 +1,41 @@
+---
+title: Test
+
+author: |
+  | David M McGaughey 1^[Corresponding author: mcgaugheyd@mail.nih.gov] $^1$, John M Bryan $^1$
+  | $^1$OGVFB NEI NIH
+
+
+abstract: |
+  eyeIntegration is an series of open databases with an extensive transcriptomic database containing over 30 GTEx human body tissues as well as major components of the eye: retina, RPE, RPE-choroid, and cornea. eyeIntegration also holds two WGCNA networks for retina and RPE-choroid. areWeb application con 
+
+bibliography: Unified Gene Expression.bib
+csl: genome-biology.csl
+
+output:
+  bookdown::pdf_document2:
+  toc: no
+fig_caption: yes
+
+always_allow_html: yes
+
+# These are LaTex settings to take care of floating figures/tables, line spacing, etc
+header-includes:
+    - \usepackage{setspace}
+    - \doublespacing
+    - \usepackage{lineno}
+    - \linenumbers
+---
+
+
+```{r Setup..., message=FALSE, warning=FALSE, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'p') # Places figures on their own pages
+knitr::opts_chunk$set(out.width = '100%', dpi=300)
+
+# I usually load my libraries up front to keep things organized
+library(bookdown)
+#library(knitr)
+#library(kableExtra)
+library(tidyverse)
+
+```
