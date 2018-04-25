@@ -35,9 +35,19 @@ library(citr)
 
 # Introduction
 
+```{r, fig.cap=paste('Density of num'), echo=F}
+library(tidyverse)
+rand <- sample(1:100, 100, replace=F)
+rand %>% density() %>% plot()
+```
 # Materials and Methods
 
-## 
+Cell | Number
+----- | -----
+RPE | 200
+Fibroblast | 30
+
+
 ## Single Cell RNA-Seq Data
 [@macoskoHighlyParallelGenomewide2015]
 
