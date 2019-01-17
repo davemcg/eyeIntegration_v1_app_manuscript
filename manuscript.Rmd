@@ -10,7 +10,7 @@ author:
       email: mcgaugheyd@mail.nih.gov
 institute:
   - ogvfb: Ophthalmic Genetics and Visual Function Branch, National Eye Institute, National Institutes of Health
-date: "1/17/2019"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output:
   word_document:
     reference_docx: word-styles-reference-01.docx
