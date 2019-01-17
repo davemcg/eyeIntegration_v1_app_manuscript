@@ -1,0 +1,12 @@
+---
+title: 'Eye in a Disk: eyeIntegration version 1.00'
+author: |
+  | $^1$OGVFB NEI NIH
+  | David M McGaughey 1^[Corresponding author: mcgaugheyd@mail.nih.gov] $^1$, Vinay Swamy $^1$
+date: "1/17/2019"
+output:
+  word_document:
+    reference_docx: word-styles-reference-01.docx
+---
+
+My report starts here

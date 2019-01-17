@@ -8,9 +8,8 @@ abstract: |
 bibliography: Unified Gene Expression.bib
 csl: genome-biology.csl
 output:
-  bookdown::pdf_document2:
-  toc: yes
-  word_document: default
+  word_document:
+    reference_docx: word-styles-reference-01.docx 
 fig_caption: yes
 always_allow_html: yes
 header-includes:
