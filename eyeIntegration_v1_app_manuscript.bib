@@ -17,6 +17,26 @@
   eprint = {23715323}
 }
 
+@article{sonesonIsoformPrefilteringImproves2016,
+  langid = {english},
+  title = {Isoform Prefiltering Improves Performance of Count-Based Methods for Analysis of Differential Transcript Usage},
+  volume = {17},
+  issn = {1474-760X},
+  doi = {10.1186/s13059-015-0862-3},
+  abstract = {BACKGROUND: RNA-seq has been a boon to the quantitative analysis of transcriptomes. A notable application is the detection of changes in transcript usage between experimental conditions. For example, discovery of pathological alternative splicing may allow the development of new treatments or better management of patients. From an analysis perspective, there are several ways to approach RNA-seq data to unravel differential transcript usage, such as annotation-based exon-level counting, differential analysis of the percentage spliced in, or quantitative analysis of assembled transcripts. The goal of this research is to compare and contrast current state-of-the-art methods, and to suggest improvements to commonly used work flows.
+RESULTS: We assess the performance of representative work flows using synthetic data and explore the effect of using non-standard counting bin definitions as input to DEXSeq, a state-of-the-art inference engine. Although the canonical counting provided the best results overall, several non-canonical approaches were as good or better in specific aspects and most counting approaches outperformed the evaluated event- and assembly-based methods. We show that an incomplete annotation catalog can have a detrimental effect on the ability to detect differential transcript usage in transcriptomes with few isoforms per gene and that isoform-level prefiltering can considerably improve false discovery rate control.
+CONCLUSION: Count-based methods generally perform well in the detection of differential transcript usage. Controlling the false discovery rate at the imposed threshold is difficult, particularly in complex organisms, but can be improved by prefiltering the annotation catalog.},
+  journaltitle = {Genome Biology},
+  shortjournal = {Genome Biol.},
+  date = {2016-01-26},
+  pages = {12},
+  keywords = {Alternative Splicing,Exons,High-Throughput Nucleotide Sequencing,Humans,Protein Isoforms,RNA,Sequence Analysis; RNA,Transcription; Genetic,Transcriptome},
+  author = {Soneson, Charlotte and Matthes, Katarina L. and Nowicka, Malgorzata and Law, Charity W. and Robinson, Mark D.},
+  eprinttype = {pmid},
+  eprint = {26813113},
+  pmcid = {PMC4729156}
+}
+
 @article{pinelliAtlasGeneExpression2016,
   title = {An Atlas of Gene Expression and Gene Co-Regulation in the Human Retina},
   volume = {44},
@@ -91,22 +111,26 @@
   eprint = {20648062}
 }
 
-@article{budakExpressDatabaseTranscriptome2018,
-  title = {Express: {{A}} Database of Transcriptome Profiles Encompassing Known and Novel Transcripts across Multiple Development Stages in Eye Tissues},
-  volume = {168},
-  issn = {0014-4835},
-  url = {http://www.sciencedirect.com/science/article/pii/S0014483516305607},
-  doi = {10.1016/j.exer.2018.01.009},
-  shorttitle = {Express},
-  abstract = {Advances in sequencing have facilitated nucleotide-resolution genome-wide transcriptomic profiles across multiple mouse eye tissues. However, these RNA sequencing (RNA-seq) based eye developmental transcriptomes are not organized for easy public access, making any further analysis challenging. Here, we present a new database “Express” (http://www.iupui.edu/∼sysbio/express/) that unifies various mouse lens and retina RNA-seq data and provides user-friendly visualization of the transcriptome to facilitate gene discovery in the eye. We obtained RNA-seq data encompassing 7 developmental stages of lens in addition to that on isolated lens epithelial and fibers, as well as on 11 developmental stages of retina/isolated retinal rod photoreceptor cells from publicly available wild-type mouse datasets. These datasets were pre-processed, aligned, quantified and normalized for expression levels of known and novel transcripts using a unified expression quantification framework. Express provides heatmap and browser view allowing easy navigation of the genomic organization of transcripts or gene loci. Further, it allows users to search candidate genes and export both the visualizations and the embedded data to facilitate downstream analysis. We identified total of $>$81,000 transcripts in the lens and $>$178,000 transcripts in the retina across all the included developmental stages. This analysis revealed that a significant number of the retina-expressed transcripts are novel. Expression of several transcripts in the lens and retina across multiple developmental stages was independently validated by RT-qPCR for established genes such as Pax6 and Lhx2 as well as for new candidates such as Elavl4, Rbm5, Pabpc1, Tia1 and Tubb2b. Thus, Express serves as an effective portal for analyzing pruned RNA-seq expression datasets presently collected for the lens and retina. It will allow a wild-type context for the detailed analysis of targeted gene-knockout mouse ocular defect models and facilitate the prioritization of candidate genes from Exome-seq data of eye disease patients.},
-  journaltitle = {Experimental Eye Research},
-  shortjournal = {Experimental Eye Research},
-  urldate = {2019-01-17},
-  date = {2018-03-01},
-  pages = {57-68},
-  keywords = {Mouse,Transcriptome,Development stages,Expression levels,Eye tissues,RNA-seq},
-  author = {Budak, Gungor and Dash, Soma and Srivastava, Rajneesh and Lachke, Salil A. and Janga, Sarath Chandra},
-  file = {/Users/mcgaugheyd/Zotero/storage/WNP9IG58/Budak et al. - 2018 - Express A database of transcriptome profiles enco.pdf;/Users/mcgaugheyd/Zotero/storage/PYI44DVZ/S0014483516305607.html}
+@article{maatenAcceleratingTSNEUsing2014,
+  title = {Accelerating T-{{SNE}} Using {{Tree}}-{{Based Algorithms}}},
+  volume = {15},
+  url = {http://jmlr.org/papers/v15/vandermaaten14a.html},
+  journaltitle = {Journal of Machine Learning Research},
+  urldate = {2018-07-05},
+  date = {2014},
+  pages = {3221-3245},
+  author = {van der Maaten, Laurens},
+  file = {/Users/mcgaugheyd/Zotero/storage/ENQIS979/Maaten - 2014 - Accelerating t-SNE using Tree-Based Algorithms.pdf;/Users/mcgaugheyd/Zotero/storage/NS6H2IUJ/vandermaaten14a.html}
+}
+
+@article{Bryan_2018,
+  title = {Identifying Core Biological Processes Distinguishing Human Eye Tissues with Precise Systems-Level Gene Expression Analyses and Weighted Correlation Networks},
+  url = {https://doi.org/10.1093%2Fhmg%2Fddy239},
+  doi = {10.1093/hmg/ddy239},
+  journaltitle = {Human Molecular Genetics},
+  date = {2018-06},
+  author = {Bryan, John M and Fufa, Temesgen D and Bharti, Kapil and Brooks, Brian P and Hufnagel, Robert B and McGaughey, David M},
+  publisher = {{Oxford University Press (OUP)}}
 }
 
 @article{pengEngineeringBloodRetinalBarrier2013,
@@ -819,6 +843,238 @@ Human retinal organoids offer an opportunity to study the pathways regulating de
   keywords = {Cell differentiation,Choroid,Eyes,Gene expression,Induced pluripotent stem cells,Long non-coding RNAs,Photoreceptors,Transcriptome analysis},
   author = {Au, Elizabeth D. and Fernandez-Godino, Rosario and Kaczynksi, Tadeusz J. and Sousa, Maria E. and Farkas, Michael H.},
   file = {/Users/mcgaugheyd/Zotero/storage/2QJQ9AHN/Au et al. - 2017 - Characterization of lincRNA expression in the huma.pdf;/Users/mcgaugheyd/Zotero/storage/SSTWD9YC/article.html}
+}
+
+@article{kakranaISyTEDatabaseExpressionbased2018,
+  langid = {english},
+  title = {{{iSyTE}} 2.0: A Database for Expression-Based Gene Discovery in the Eye},
+  volume = {46},
+  issn = {1362-4962},
+  doi = {10.1093/nar/gkx837},
+  shorttitle = {{{iSyTE}} 2.0},
+  abstract = {Although successful in identifying new cataract-linked genes, the previous version of the database iSyTE (integrated Systems Tool for Eye gene discovery) was based on expression information on just three mouse lens stages and was functionally limited to visualization by only UCSC-Genome Browser tracks. To increase its efficacy, here we provide an enhanced iSyTE version 2.0 (URL: http://research.bioinformatics.udel.edu/iSyTE) based on well-curated, comprehensive genome-level lens expression data as a one-stop portal for the effective visualization and analysis of candidate genes in lens development and disease. iSyTE 2.0 includes all publicly available lens Affymetrix and Illumina microarray datasets representing a broad range of embryonic and postnatal stages from wild-type and specific gene-perturbation mouse mutants with eye defects. Further, we developed a new user-friendly web interface for direct access and cogent visualization of the curated expression data, which supports convenient searches and a range of downstream analyses. The utility of these new iSyTE 2.0 features is illustrated through examples of established genes associated with lens development and pathobiology, which serve as tutorials for its application by the end-user. iSyTE 2.0 will facilitate the prioritization of eye development and disease-linked candidate genes in studies involving transcriptomics or next-generation sequencing data, linkage analysis and GWAS approaches.},
+  number = {D1},
+  journaltitle = {Nucleic Acids Research},
+  shortjournal = {Nucleic Acids Res.},
+  date = {2018-01-04},
+  pages = {D875-D885},
+  author = {Kakrana, Atul and Yang, Andrian and Anand, Deepti and Djordjevic, Djordje and Ramachandruni, Deepti and Singh, Abhyudai and Huang, Hongzhan and Ho, Joshua W. K. and Lachke, Salil A.},
+  eprinttype = {pmid},
+  eprint = {29036527},
+  pmcid = {PMC5753381}
+}
+
+@article{budakExpressDatabaseTranscriptome2018a,
+  langid = {english},
+  title = {Express: {{A}} Database of Transcriptome Profiles Encompassing Known and Novel Transcripts across Multiple Development Stages in Eye Tissues},
+  volume = {168},
+  issn = {1096-0007},
+  doi = {10.1016/j.exer.2018.01.009},
+  shorttitle = {Express},
+  abstract = {Advances in sequencing have facilitated nucleotide-resolution genome-wide transcriptomic profiles across multiple mouse eye tissues. However, these RNA sequencing (RNA-seq) based eye developmental transcriptomes are not organized for easy public access, making any further analysis challenging. Here, we present a new database "Express" (http://www.iupui.edu/∼sysbio/express/) that unifies various mouse lens and retina RNA-seq data and provides user-friendly visualization of the transcriptome to facilitate gene discovery in the eye. We obtained RNA-seq data encompassing 7 developmental stages of lens in addition to that on isolated lens epithelial and fibers, as well as on 11 developmental stages of retina/isolated retinal rod photoreceptor cells from publicly available wild-type mouse datasets. These datasets were pre-processed, aligned, quantified and normalized for expression levels of known and novel transcripts using a unified expression quantification framework. Express provides heatmap and browser view allowing easy navigation of the genomic organization of transcripts or gene loci. Further, it allows users to search candidate genes and export both the visualizations and the embedded data to facilitate downstream analysis. We identified total of $>$81,000 transcripts in the lens and $>$178,000 transcripts in the retina across all the included developmental stages. This analysis revealed that a significant number of the retina-expressed transcripts are novel. Expression of several transcripts in the lens and retina across multiple developmental stages was independently validated by RT-qPCR for established genes such as Pax6 and Lhx2 as well as for new candidates such as Elavl4, Rbm5, Pabpc1, Tia1 and Tubb2b. Thus, Express serves as an effective portal for analyzing pruned RNA-seq expression datasets presently collected for the lens and retina. It will allow a wild-type context for the detailed analysis of targeted gene-knockout mouse ocular defect models and facilitate the prioritization of candidate genes from Exome-seq data of eye disease patients.},
+  journaltitle = {Experimental Eye Research},
+  shortjournal = {Exp. Eye Res.},
+  date = {2018-03},
+  pages = {57-68},
+  keywords = {Animals,Gene Expression Profiling,Mice,Mouse,RNA; Messenger,Retina,Sequence Analysis; RNA,Transcriptome,Eye Proteins,Lens; Crystalline,Development stages,Expression levels,Eye tissues,RNA-seq,Databases; Factual},
+  author = {Budak, Gungor and Dash, Soma and Srivastava, Rajneesh and Lachke, Salil A. and Janga, Sarath Chandra},
+  eprinttype = {pmid},
+  eprint = {29337142},
+  pmcid = {PMC5826895}
+}
+
+@article{leinonenSequenceReadArchive2011,
+  title = {The {{Sequence Read Archive}}},
+  volume = {39},
+  issn = {0305-1048},
+  url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3013647/},
+  doi = {10.1093/nar/gkq1019},
+  abstract = {The combination of significantly lower cost and increased speed of sequencing has resulted in an explosive growth of data submitted into the primary next-generation sequence data archive, the Sequence Read Archive (SRA). The preservation of experimental data is an important part of the scientific record, and increasing numbers of journals and funding agencies require that next-generation sequence data are deposited into the SRA. The SRA was established as a public repository for the next-generation sequence data and is operated by the International Nucleotide Sequence Database Collaboration (INSDC). INSDC partners include the National Center for Biotechnology Information (NCBI), the European Bioinformatics Institute (EBI) and the DNA Data Bank of Japan (DDBJ). The SRA is accessible at http://www.ncbi.nlm.nih.gov/Traces/sra from NCBI, at http://www.ebi.ac.uk/ena from EBI and at http://trace.ddbj.nig.ac.jp from DDBJ. In this article, we present the content and structure of the SRA, detail our support for sequencing platforms and provide recommended data submission levels and formats. We also briefly outline our response to the challenge of data growth.},
+  issue = {Database issue},
+  journaltitle = {Nucleic Acids Research},
+  shortjournal = {Nucleic Acids Res},
+  urldate = {2019-01-18},
+  date = {2011-01},
+  pages = {D19-D21},
+  author = {Leinonen, Rasko and Sugawara, Hideaki and Shumway, Martin},
+  file = {/Users/mcgaugheyd/Zotero/storage/YVVFKSAR/Leinonen et al. - 2011 - The Sequence Read Archive.pdf},
+  eprinttype = {pmid},
+  eprint = {21062823},
+  pmcid = {PMC3013647}
+}
+
+@article{lachmannMassiveMiningPublicly2018,
+  langid = {english},
+  title = {Massive Mining of Publicly Available {{RNA}}-Seq Data from Human and Mouse},
+  volume = {9},
+  issn = {2041-1723},
+  url = {https://www.nature.com/articles/s41467-018-03751-6},
+  doi = {10.1038/s41467-018-03751-6},
+  abstract = {Publicly available RNA-seq data is provided mostly in raw form, resulting in a barrier for integrative analyses. Here, Lachmann et al. develop a high-throughput processing infrastructure and search database (ARCHS4) that provides processed RNA-seq data for 187,946 publicly available mouse and human samples to support exploration and reuse.},
+  number = {1},
+  journaltitle = {Nature Communications},
+  urldate = {2019-01-18},
+  date = {2018-04-10},
+  pages = {1366},
+  author = {Lachmann, Alexander and Torre, Denis and Keenan, Alexandra B. and Jagodnik, Kathleen M. and Lee, Hoyjin J. and Wang, Lily and Silverstein, Moshe C. and Ma’ayan, Avi},
+  file = {/Users/mcgaugheyd/Zotero/storage/QH8H6LEG/Lachmann et al. - 2018 - Massive mining of publicly available RNA-seq data .pdf;/Users/mcgaugheyd/Zotero/storage/GBIDUMYN/s41467-018-03751-6.html}
+}
+
+@article{collado-torresReproducibleRNAseqAnalysis2017,
+  langid = {english},
+  title = {Reproducible {{RNA}}-Seq Analysis Using {\emph{Recount2}}},
+  volume = {35},
+  issn = {1546-1696},
+  url = {https://www.nature.com/articles/nbt.3838},
+  doi = {10.1038/nbt.3838},
+  abstract = {Reproducible RNA-seq analysis using recount2},
+  journaltitle = {Nature Biotechnology},
+  urldate = {2019-01-18},
+  date = {2017-04-11},
+  pages = {319-321},
+  author = {Collado-Torres, Leonardo and Nellore, Abhinav and Kammers, Kai and Ellis, Shannon E. and Taub, Margaret A. and Hansen, Kasper D. and Jaffe, Andrew E. and Langmead, Ben and Leek, Jeffrey T.},
+  file = {/Users/mcgaugheyd/Zotero/storage/FP4MX4DB/Collado-Torres et al. - 2017 - Reproducible RNA-seq analysis using irecount2i.pdf;/Users/mcgaugheyd/Zotero/storage/QHUJZ6EW/nbt.html}
+}
+
+@article{zhuSRAdbQueryUse2013a,
+  title = {{{SRAdb}}: Query and Use Public next-Generation Sequencing Data from within {{R}}},
+  volume = {14},
+  issn = {1471-2105},
+  url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3560148/},
+  doi = {10.1186/1471-2105-14-19},
+  shorttitle = {{{SRAdb}}},
+  abstract = {Background
+The Sequence Read Archive (SRA) is the largest public repository of sequencing data from the next generation of sequencing platforms including Illumina (Genome Analyzer, HiSeq, MiSeq, .etc), Roche 454 GS System, Applied Biosystems SOLiD System, Helicos Heliscope, PacBio RS, and others.
+
+Results
+SRAdb is an attempt to make queries of the metadata associated with SRA submission, study, sample, experiment and run more robust and precise, and make access to sequencing data in the SRA easier. We have parsed all the SRA metadata into a SQLite database that is routinely updated and can be easily distributed. The SRAdb R/Bioconductor package then utilizes this SQLite database for querying and accessing metadata. Full text search functionality makes querying metadata very flexible and powerful. Fastq files associated with query results can be downloaded easily for local analysis. The package also includes an interface from R to a popular genome browser, the Integrated Genomics Viewer.
+
+Conclusions
+SRAdb Bioconductor package provides a convenient and integrated framework to query and access SRA metadata quickly and powerfully from within R.},
+  journaltitle = {BMC Bioinformatics},
+  shortjournal = {BMC Bioinformatics},
+  urldate = {2019-01-18},
+  date = {2013-01-17},
+  pages = {19},
+  author = {Zhu, Yuelin and Stephens, Robert M and Meltzer, Paul S and Davis, Sean R},
+  file = {/Users/mcgaugheyd/Zotero/storage/WT6MMR8S/Zhu et al. - 2013 - SRAdb query and use public next-generation sequen.pdf},
+  eprinttype = {pmid},
+  eprint = {23323543},
+  pmcid = {PMC3560148}
+}
+
+@article{liSequenceAlignmentMap2009,
+  langid = {english},
+  title = {The {{Sequence Alignment}}/{{Map}} Format and {{SAMtools}}},
+  volume = {25},
+  issn = {1367-4811},
+  doi = {10.1093/bioinformatics/btp352},
+  abstract = {SUMMARY: The Sequence Alignment/Map (SAM) format is a generic alignment format for storing read alignments against reference sequences, supporting short and long reads (up to 128 Mbp) produced by different sequencing platforms. It is flexible in style, compact in size, efficient in random access and is the format in which alignments from the 1000 Genomes Project are released. SAMtools implements various utilities for post-processing alignments in the SAM format, such as indexing, variant caller and alignment viewer, and thus provides universal tools for processing read alignments.
+AVAILABILITY: http://samtools.sourceforge.net.},
+  number = {16},
+  journaltitle = {Bioinformatics (Oxford, England)},
+  shortjournal = {Bioinformatics},
+  date = {2009-08-15},
+  pages = {2078-2079},
+  keywords = {Algorithms,Base Sequence,Genome,Genomics,Molecular Sequence Data,Sequence Alignment,Sequence Analysis; DNA,Software,Computational Biology},
+  author = {Li, Heng and Handsaker, Bob and Wysoker, Alec and Fennell, Tim and Ruan, Jue and Homer, Nils and Marth, Gabor and Abecasis, Goncalo and Durbin, Richard and {1000 Genome Project Data Processing Subgroup}},
+  eprinttype = {pmid},
+  eprint = {19505943},
+  pmcid = {PMC2723002}
+}
+
+@article{patroSalmonProvidesFast2017a,
+  langid = {english},
+  title = {Salmon Provides Fast and Bias-Aware Quantification of Transcript Expression},
+  volume = {14},
+  issn = {1548-7105},
+  url = {https://www.nature.com/articles/nmeth.4197},
+  doi = {10.1038/nmeth.4197},
+  abstract = {We introduce Salmon, a lightweight method for quantifying transcript abundance from RNA–seq reads. Salmon combines a new dual-phase parallel inference algorithm and feature-rich bias models with an ultra-fast read mapping procedure. It is the first transcriptome-wide quantifier to correct for fragment GC-content bias, which, as we demonstrate here, substantially improves the accuracy of abundance estimates and the sensitivity of subsequent differential expression analysis.},
+  number = {4},
+  journaltitle = {Nature Methods},
+  urldate = {2019-01-18},
+  date = {2017-04},
+  pages = {417-419},
+  author = {Patro, Rob and Duggal, Geet and Love, Michael I. and Irizarry, Rafael A. and Kingsford, Carl},
+  file = {/Users/mcgaugheyd/Zotero/storage/DGM9AD5I/Patro et al. - 2017 - Salmon provides fast and bias-aware quantification.pdf;/Users/mcgaugheyd/Zotero/storage/I9PHU85L/nmeth.html}
+}
+
+@article{harrowGENCODEReferenceHuman2012,
+  title = {{{GENCODE}}: {{The}} Reference Human Genome Annotation for {{The ENCODE Project}}},
+  volume = {22},
+  issn = {1088-9051},
+  url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431492/},
+  doi = {10.1101/gr.135350.111},
+  shorttitle = {{{GENCODE}}},
+  abstract = {The GENCODE Consortium aims to identify all gene features in the human genome using a combination of computational analysis, manual annotation, and experimental validation. Since the first public release of this annotation data set, few new protein-coding loci have been added, yet the number of alternative splicing transcripts annotated has steadily increased. The GENCODE 7 release contains 20,687 protein-coding and 9640 long noncoding RNA loci and has 33,977 coding transcripts not represented in UCSC genes and RefSeq. It also has the most comprehensive annotation of long noncoding RNA (lncRNA) loci publicly available with the predominant transcript form consisting of two exons. We have examined the completeness of the transcript annotation and found that 35\% of transcriptional start sites are supported by CAGE clusters and 62\% of protein-coding genes have annotated polyA sites. Over one-third of GENCODE protein-coding genes are supported by peptide hits derived from mass spectrometry spectra submitted to Peptide Atlas. New models derived from the Illumina Body Map 2.0 RNA-seq data identify 3689 new loci not currently in GENCODE, of which 3127 consist of two exon models indicating that they are possibly unannotated long noncoding loci. GENCODE 7 is publicly available from gencodegenes.org and via the Ensembl and UCSC Genome Browsers.},
+  number = {9},
+  journaltitle = {Genome Research},
+  shortjournal = {Genome Res},
+  urldate = {2019-01-18},
+  date = {2012-09},
+  pages = {1760-1774},
+  author = {Harrow, Jennifer and Frankish, Adam and Gonzalez, Jose M. and Tapanari, Electra and Diekhans, Mark and Kokocinski, Felix and Aken, Bronwen L. and Barrell, Daniel and Zadissa, Amonida and Searle, Stephen and Barnes, If and Bignell, Alexandra and Boychenko, Veronika and Hunt, Toby and Kay, Mike and Mukherjee, Gaurab and Rajan, Jeena and Despacio-Reyes, Gloria and Saunders, Gary and Steward, Charles and Harte, Rachel and Lin, Michael and Howald, Cédric and Tanzer, Andrea and Derrien, Thomas and Chrast, Jacqueline and Walters, Nathalie and Balasubramanian, Suganthi and Pei, Baikang and Tress, Michael and Rodriguez, Jose Manuel and Ezkurdia, Iakes and van Baren, Jeltje and Brent, Michael and Haussler, David and Kellis, Manolis and Valencia, Alfonso and Reymond, Alexandre and Gerstein, Mark and Guigó, Roderic and Hubbard, Tim J.},
+  options = {useprefix=true},
+  file = {/Users/mcgaugheyd/Zotero/storage/P5R7SVCF/Harrow et al. - 2012 - GENCODE The reference human genome annotation for.pdf},
+  eprinttype = {pmid},
+  eprint = {22955987},
+  pmcid = {PMC3431492}
+}
+
+@article{sonesonDifferentialAnalysesRNAseq2016a,
+  langid = {english},
+  title = {Differential Analyses for {{RNA}}-Seq: Transcript-Level Estimates Improve Gene-Level Inferences},
+  volume = {4},
+  issn = {2046-1402},
+  url = {https://f1000research.com/articles/4-1521/v2},
+  doi = {10.12688/f1000research.7563.2},
+  shorttitle = {Differential Analyses for {{RNA}}-Seq},
+  journaltitle = {F1000Research},
+  urldate = {2019-01-18},
+  date = {2016-02-29},
+  pages = {1521},
+  author = {Soneson, Charlotte and Love, Michael I. and Robinson, Mark D.},
+  file = {/Users/mcgaugheyd/Zotero/storage/3GNWJNUX/v2.html}
+}
+
+@article{robinsonEdgeRBioconductorPackage2010,
+  title = {{{edgeR}}: A {{Bioconductor}} Package for Differential Expression Analysis of Digital Gene Expression Data},
+  volume = {26},
+  issn = {1367-4803},
+  url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796818/},
+  doi = {10.1093/bioinformatics/btp616},
+  shorttitle = {{{edgeR}}},
+  abstract = {Summary: It is expected that emerging digital gene expression (DGE) technologies will overtake microarray technologies in the near future for many functional genomics applications. One of the fundamental data analysis tasks, especially for gene expression studies, involves determining whether there is evidence that counts for a transcript or exon are significantly different across experimental conditions. edgeR is a Bioconductor software package for examining differential expression of replicated count data. An overdispersed Poisson model is used to account for both biological and technical variability. Empirical Bayes methods are used to moderate the degree of overdispersion across transcripts, improving the reliability of inference. The methodology can be used even with the most minimal levels of replication, provided at least one phenotype or experimental condition is replicated. The software may have other applications beyond sequencing data, such as proteome peptide count data., Availability: The package is freely available under the LGPL licence from the Bioconductor web site (http://bioconductor.org)., Contact: mrobinson@wehi.edu.au},
+  number = {1},
+  journaltitle = {Bioinformatics},
+  shortjournal = {Bioinformatics},
+  urldate = {2019-01-18},
+  date = {2010-01-01},
+  pages = {139-140},
+  author = {Robinson, Mark D. and McCarthy, Davis J. and Smyth, Gordon K.},
+  file = {/Users/mcgaugheyd/Zotero/storage/ZTH3I6SW/Robinson et al. - 2010 - edgeR a Bioconductor package for differential exp.pdf},
+  eprinttype = {pmid},
+  eprint = {19910308},
+  pmcid = {PMC2796818}
+}
+
+@article{hicksSmoothQuantileNormalization2018a,
+  langid = {english},
+  title = {Smooth Quantile Normalization},
+  volume = {19},
+  issn = {1465-4644},
+  url = {https://academic.oup.com/biostatistics/article/19/2/185/3949169},
+  doi = {10.1093/biostatistics/kxx028},
+  abstract = {SUMMARY.  Between-sample normalization is a critical step in genomic data analysis to remove systematic bias and unwanted technical variation in high-throughput},
+  number = {2},
+  journaltitle = {Biostatistics},
+  shortjournal = {Biostatistics},
+  urldate = {2019-01-18},
+  date = {2018-04-01},
+  pages = {185-198},
+  author = {Hicks, Stephanie C. and Okrah, Kwame and Paulson, Joseph N. and Quackenbush, John and Irizarry, Rafael A. and Bravo, Héctor Corrada},
+  file = {/Users/mcgaugheyd/Zotero/storage/J7VE9264/Hicks et al. - 2018 - Smooth quantile normalization.pdf;/Users/mcgaugheyd/Zotero/storage/DE8NTKTA/3949169.html}
 }
 
 
