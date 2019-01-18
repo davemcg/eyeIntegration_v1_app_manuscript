@@ -45,8 +45,8 @@ pca_plot <- ggplot(dimRed_plot_prep_pca %>%
                    aes(x=`Dimension 1`,y=`Dimension 2`)) +
   scale_shape_manual(values=c(0:20,35:50)) +
   ggtitle(paste0('All Tissue PCA')) +
-  geom_point(size=16, alpha=0.1, aes(colour=Tissue)) +
-  geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_point(size=6, alpha=0.1, aes(colour=Tissue)) +
+  geom_point(size=1, alpha=0.6, position='jitter', aes(shape=Origin)) +
   #geom_label_repel(aes(label=Label), alpha=0.8, size=4, box.padding = unit(0.3, "lines")) + theme_minimal() +
   xlab('Dimension 1') + ylab('Dimension 2') +
   theme_minimal()
