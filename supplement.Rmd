@@ -1,0 +1,63 @@
+---
+title: 'Supplementary Materials'
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  bookdown::word_document2:
+    reference_docx: word-styles-reference-01.docx
+bibliography: eyeIntegration_v1_app_manuscript.bib
+csl: investigative-ophthalmology-and-visual-science.csl
+---
+
+```{r}
+load('data/dimRed_plot_data.Rdata')
+library(tidyverse)
+library(ggrepel)
+
+
+
+
+
+# eye PCA
+eye_pca_plot <- ggplot(dimRed_plot_prep_eye_pca %>% 
+         mutate(Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)),
+       aes(x=`Dimension 1`,y=`Dimension 2`)) +
+  scale_shape_manual(values=c(0:20,35:50)) +
+  ggtitle(paste0('Eye Tissue PCA')) +
+  geom_point(size=16, alpha=0.1, aes(colour=Tissue)) +
+  geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_label_repel(aes(label=Label), alpha=0.8, size=4, box.padding = unit(0.3, "lines")) + theme_minimal() +
+  xlab('Dimension 1') + ylab('Dimension 2')
+# eye tSNE
+eye_tsne_plot <- ggplot(dimRed_plot_prep_eye_tsne %>% 
+                         mutate(Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)),
+                       aes(x=`Dimension 1`,y=`Dimension 2`)) +
+  scale_shape_manual(values=c(0:20,35:50)) +
+  ggtitle(paste0('Eye Tissue t-SNE')) +
+  geom_point(size=16, alpha=0.1, aes(colour=Tissue)) +
+  geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_label_repel(aes(label=Label), alpha=0.8, size=4, box.padding = unit(0.3, "lines")) + theme_minimal()
+plot_grid(eye_pca_plot, eye_tsne_plot)
+
+# pca
+pca_plot <- ggplot(dimRed_plot_prep_pca %>% 
+                     mutate(Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)),
+                   aes(x=`Dimension 1`,y=`Dimension 2`)) +
+  scale_shape_manual(values=c(0:20,35:50)) +
+  ggtitle(paste0('All Tissue PCA')) +
+  geom_point(size=16, alpha=0.1, aes(colour=Tissue)) +
+  geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_label_repel(aes(label=Label), alpha=0.8, size=4, box.padding = unit(0.3, "lines")) + theme_minimal() +
+  xlab('Dimension 1') + ylab('Dimension 2')
+
+# tSNE
+tsne_plot <- ggplot(dimRed_plot_prep_tsne %>% 
+                         mutate(Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)),
+                       aes(x=`Dimension 1`,y=`Dimension 2`)) +
+  scale_shape_manual(values=c(0:20,35:50)) +
+  ggtitle(paste0('All Tissue PCA')) +
+  geom_point(size=16, alpha=0.1, aes(colour=Tissue)) +
+  geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_label_repel(aes(label=Label), alpha=0.8, size=4, box.padding = unit(0.3, "lines")) + theme_minimal() +
+  xlab('Dimension 1') + ylab('Dimension 2')
+
+```
