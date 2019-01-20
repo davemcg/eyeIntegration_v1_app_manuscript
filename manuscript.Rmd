@@ -33,9 +33,9 @@ library(citr)
 library(cowplot)
 library(ggrepel)
 library(colorspace)
-library(png)
 library(flextable)
 library(captioner)
+library(dbscan)
 
 # setup caption-ing
 fig_cap <- captioner("Figure")
@@ -44,14 +44,10 @@ tab_cap <- captioner("Table")
 supTab_cap <- captioner("Supplemental Table")
 
 # attach data pools
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/data/eyeIntegration_EiaD/eyeIntegration_human_expression_2019_v100.sqlite')
-gene_pool_2017 <- dbPool(drv = SQLite(), dbname = '/Volumes/data/eyeIntegration_EiaD/eyeIntegration_human_2017_01.sqlite')
-core_tight_2017 <- gene_pool_2017 %>% tbl('metadata') %>% as_tibble()
-core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
+# source('src/data_pull.R')
+load('data/data_pull.Rdata')
+# vinny sra search
 load('data/human_tx_studies.Rdata')
-tsne_50 <- gene_pool_2019 %>% tbl('tSNE_bulk_RNA') %>% filter(Perplexity == 45) %>% as_tibble()
-anno <- gene_pool_2019 %>% tbl('gene_IDs')
-
 ```
 
 # Abstract
@@ -103,7 +99,7 @@ After our quality control and processing workflow, we found that samples of the 
 ```{r tsne_fig, fig.height = 15, fig.width = 20, echo = F, message = F, fig.cap=tsne_cap}
 tsne_cap <- fig_cap(name='tSNE', caption = 'Tissue - tissue consistent two-dimensional sample - sample transcriptome profiles demonstrate effective quality control and sample processing')
 
-dbscan_cluster <- dbscan::dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
+dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
 tsne_50$Cluster <- dbscan_cluster$cluster
 col1 = 'X1'
 col2 = 'X2'
@@ -153,10 +149,9 @@ tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx
   guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-
 ## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sample along with `r ((core_tight_2019$study_accession %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new studies and `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples, and four new sub-tissue types added to 2019 EiaD dataset
 Our initial query to the SRA found `r human_tx_studies$study_accession %>% unique() %>% length()` potentially relevant studies deposited since our last search on January 19th, 2017. We removed non-pertinent studies and selected healthy or unmodified tissue from each relevant study for a total, including  of `r core_tight_2019$study_accession %>% unique() %>% length()` studies, `r ((core_tight_2019$study_accession %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` of which are new to the 2019 EiaD dataset. The 2019 EiaD dataset contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession != 'SRP012682') %>% nrow()` human eye tissues and also includes `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% nrow()` GTEx samples across `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` tissues for easy comparison `r paste0('Tables ', tab_cap(name = 'tableSampleCounts', display = 'num'), ', ', tab_cap(name = 'tableSampleCountsGTEx', display = 'num'))`. The 2019 EiaD contains `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Cornea') %>% nrow()` cornea, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Lens') %>% nrow()` lens, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Retina') %>% nrow()` retina, and `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'RPE') %>% nrow()` RPE (choroid) samples; in total we have added `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples to the 2019 EiaD  (`r fig_cap(name = 'tissueCountsBarPlot', display = 'cite')`). Stem cell derived cornea, stem cell derived lens, fetal retina, and organoid retina are four new types of sub-tissues that are now available in eyeIntegration.
-Another substantial addition to the 2019 EiaD are non-protein coding genes. We now quantify expression across `r gene_pool_2019 %>% tbl('gene_IDs') %>% count(gene_type) %>% as_tibble() %>% nrow()` gene types and  `r gene_pool_2019 %>% tbl('tx_IDs') %>% count(transcript_type) %>% as_tibble() %>% nrow()` transcript types, including protein coding, retained intron, lincRNA, antisense, and pseuodgenes.
+Another substantial addition to the 2019 EiaD are non-protein coding genes. We now quantify expression across `r gene_anno %>% count(gene_type) %>% as_tibble() %>% nrow()` gene types and  `r tx_anno%>% count(transcript_type) %>% as_tibble() %>% nrow()` transcript types, including protein coding, retained intron, lincRNA, antisense, and pseuodgenes.
 
 ```{r tissueCountsBarPlot, fig.height = 4, fig.cap=tissueCountsBarPlot_cap, echo=F}
 tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption = 'Substantial increase in eye tissue count and type  from 2017 to 2019 EiaD')
@@ -224,7 +219,7 @@ cat("</div>")
 ```{r tableSampleCountsGTEx, echo = F, results='asis', warning = F, fig.cap = tableSampleCountsGTEx_cap}
 tableSampleCountsGTEx_cap <- tab_cap(name='tableSampleCountsGTEx', caption = 'EiaD holds hundreds of GTEx tissues to provide a broad comparison set')
 cat("<div id=\"tbl:tableSampleCountsGTEx\">")
-regulartable(gtex) %>% width(width = c(0.5,1,0.5,5)) %>% flextable::align(align='center')
+regulartable(gtex) %>% width(width = c(0.5,1,0.5,4)) %>% flextable::align(align='center')
 #Output Caption
 cat(paste0("\n",tableSampleCountsGTEx_cap,"\n"))
 # Output </div>
