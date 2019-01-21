@@ -261,28 +261,67 @@ To evaluate this question, we look at the t-SNE plot of all tissues and focus in
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F}
 tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes')
 
-tsne_zoom <- tsne_50_prep  %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
-                                                        TRUE ~ Tissue),
-                                      Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
-                                      Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
-  filter(Group == 'Retina') %>%
+retina_plus_group <- tsne_50 %>% filter(X1 > 34, X1 < 51, X2 > -25, X2 < 21)
+dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 2.0)
+
+retina_plus_group$Cluster <- dbscan_cluster$cluster
+col1 = 'X1'
+col2 = 'X2'
+# create label points for each cluster
+cluster_centers <- retina_plus_group %>%
+  left_join(.,core_tight_2019) %>% group_by(Cluster) %>%
+  summarise(C1=mean(!!sym(col1)),C2=mean(!!sym(col2)),Tissue=paste(unique(Tissue),collapse=','))
+
+# samples closest to center in each cluster
+center_samples <- retina_plus_group %>% left_join(.,core_tight_2019)  %>%
+  left_join(.,cluster_centers, by=c('Cluster')) %>%
+  mutate(Distance = (!!sym(col1)-C1)+(!!sym(col2)-C2)) %>%
+  group_by(Cluster) %>%
+  dplyr::slice(which.min(Distance)) %>%
+  dplyr::slice(1) %>% 
+  .[['sample_accession']]
+
+# cluster stats
+cluster_stats <- retina_plus_group %>% left_join(.,core_tight_2019)  %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid'))) %>%
+  mutate(Cluster = as.factor(Cluster)) %>%
+  group_by(Cluster) %>%
+  summarise(Cluster_Tissues = paste(unique(Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
+
+# set up for ggplot
+retina_plus_group_prep <- retina_plus_group %>% 
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid'))) %>%
+  mutate(Cluster = as.factor(Cluster)) %>%
+  select(-Cluster_Tissues) %>% 
+  left_join(., cluster_stats, by=c('Cluster')) %>%
+  mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
+  mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
+
+
+
+
+tsne_zoom <- retina_plus_group_prep  %>% 
+  mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
+                           TRUE ~ Tissue),
+         Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
+         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
   mutate( zoom = TRUE )
 
 tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                                           TRUE ~ Tissue),
                         Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
                         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+  rowwise() %>% 
+  mutate(Age = str_split(sample_attribute, '_')[[1]][2]) %>% 
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
-  geom_point(size=6, alpha=0.1, aes(colour=Group)) +
-  geom_point(size=1, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  geom_point(size=9, alpha=0.1, aes(colour=Group)) +
+  geom_point(size=1, alpha=0.4, position='jitter', aes(shape=Origin)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
-  facet_zoom(xy = Group == 'Retina', zoom.size = 1, zoom.data=zoom) +
-  geom_label_repel(data=tsne_zoom,size = 7, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
+  facet_zoom(xy = Group == 'Retina', zoom.size = 1, zoom.data=zoom, horizontal = F) +
+  geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
   scale_color_discrete_sequential(palette = 'viridis') + 
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  scale_fill_continuous(guide = guide_legend()) +
-  theme(legend.position="bottom")
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
 
