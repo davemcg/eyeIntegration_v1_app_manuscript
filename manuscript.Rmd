@@ -14,6 +14,7 @@ date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output:
   word_document:
     reference_docx: word-styles-reference-01.docx
+    fig_caption: yes
     pandoc_args:
       - '--lua-filter=scholarly-metadata.lua'
       - '--lua-filter=author-info-blocks.lua'
@@ -36,6 +37,7 @@ library(colorspace)
 library(flextable)
 library(captioner)
 library(dbscan)
+library(ggforce)
 
 # setup caption-ing
 fig_cap <- captioner("Figure")
@@ -94,10 +96,10 @@ The eyeIntegration site currently hosts two large scRNA-seq datasets from Macosc
 ```
 We built an automated pipeline for processing and analyzing all data for the web app using the program Snakemake, a python-based workflow management system that allows for efficient parallel execution of the analysis, facilitates reproduction by others, and simplifies long term maintenance of the EiaD data [@kosterSnakemakeScalableBioinformatics2012]. In order to create a high quality final dataset across the 1,314 initial samples and 46,030,412,878 reads we developed a rigorous quality control procedure as part of our analysis, considering a sample’s read mapping rate and median count level as well as behavior relative to samples of the same sub-tissue type (see Methods).  To identify tube switches or sample extraction issues, we used t-SNE to group samples by sub-tissue type to identify variability within samples of the same sub-tissue and ensure overall consistency in data processing (`r fig_cap(name = 'tSNE', display = 'cite')`). 
 
-After our quality control and processing workflow, we found that samples of the same tissue type and origin cluster well together. For example, in retina derived tissue, primary adult tissue clusters tightly and distinctly from other cell types, and retinal organoids and fetal retina tissue cluster together. Our ability to uniformly cluster data by known biological function independent of study origin demonstrates that our workflow can effectively account for technical variation between studies. 
+After our quality control and processing workflow, we found that samples of the same tissue type and origin cluster well together (`r fig_cap(name = 'tSNE', display = 'cite')`). For example, in retina derived tissue, primary adult tissue clusters tightly and distinctly from other cell types, and retinal organoids and fetal retina tissue cluster together. Our ability to uniformly cluster data by known biological function independent of study origin demonstrates that our workflow can effectively account for technical variation between studies. 
 
 ```{r tsne_fig, fig.height = 15, fig.width = 20, echo = F, message = F, fig.cap=tsne_cap}
-tsne_cap <- fig_cap(name='tSNE', caption = 'Tissue - tissue consistent two-dimensional sample - sample transcriptome profiles demonstrate effective quality control and sample processing')
+tsne_cap <- fig_cap(name='tSNE', caption = 't-SNE tissue - tissue consistent two-dimensional sample - sample transcriptome profiles demonstrate effective quality control and sample processing. Colors match different tissue sets and shapes of points define the origin of the tissues.')
 
 dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
 tsne_50$Cluster <- dbscan_cluster$cluster
@@ -209,46 +211,79 @@ gtex <- cbind('GTEx', core_tight_2019 %>%
               paste(gtex_tissues, collapse = ', ')) %>% as_tibble()
 
 colnames(gtex) <- c('Group','Pre QC Count', 'Count', 'Tissue Types (Count)')
+# Output <div>
 cat("<div id=\"tbl:tableSampleCounts\">")
 regulartable(table) %>% width(width = c(0.5,1,0.5, 2)) %>% add_footer(., tableSampleCounts_cap) %>% flextable::align(align='center')
-#Output Caption
-cat(paste0("\n",tableSampleCounts_cap,"\n"))
+# Output Caption (* * for italics)
+cat(paste0("\n*",tableSampleCounts_cap,"*\n"))
 # Output </div>
 cat("</div>")
 ```
+
 ```{r tableSampleCountsGTEx, echo = F, results='asis', warning = F, fig.cap = tableSampleCountsGTEx_cap}
 tableSampleCountsGTEx_cap <- tab_cap(name='tableSampleCountsGTEx', caption = 'EiaD holds hundreds of GTEx tissues to provide a broad comparison set')
+# Output <div>
 cat("<div id=\"tbl:tableSampleCountsGTEx\">")
-regulartable(gtex) %>% width(width = c(0.5,1,0.5,4)) %>% flextable::align(align='center')
-#Output Caption
-cat(paste0("\n",tableSampleCountsGTEx_cap,"\n"))
+regulartable(gtex) %>% width(width = c(0.5,1,0.5,3)) %>% flextable::align(align='center')
+#Output Caption (* * for italics)
+cat(paste0("\n*",tableSampleCountsGTEx_cap,"*\n"))
 # Output </div>
 cat("</div>")
 ```
 
 ## eyeIntegration web app provides interactive visual portal to all data 
 The EiaD 2019 dataset is presented through the eyeIntegration web app (https://eyeIntegration.nei.nih.gov). The web app was designed to provide a simple interface that have the same general concept – select specific genes and tissue and view relevant information. The web-app is divided into four general categories: expression, two-dimension sample (or single cell) relationships, gene networks, and data tables. 
-
 ## Custom gene and tissue expression boxplots
-The expression tab of the webpage provides a wealth of information about both gene and transcript expression in a range of eye and body tissues, giving the user the ability to compare the expression of different genes within a single tissue, as well as the expression of genes across multiple tissues  (Figure \@ref(fig:appScreenshots)A). The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then genes (or transcripts), then tissues. A boxplot is then generated afer hitting the "Re(Draw) Plot" with overlaid individual data points. A tabular report is generated based on selected genes and tissues: a table with links to Ensembl, GeneCard, and OMIM for each gene for quick referencing, and a table containing expression levels for each selected gene in each selected tissue. The tables can be arranged or sorted to the user’s preference, and can be easily downloaded for local use. 
+The expression tab of the webpage provides a wealth of information about both gene and transcript expression in a range of eye and body tissues, giving the user the ability to compare the expression of different genes within a single tissue, as well as the expression of genes across multiple tissues  (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'A')`). The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then genes (or transcripts), then tissues. A boxplot is then generated afer hitting the "Re(Draw) Plot" with overlaid individual data points. A tabular report is generated based on selected genes and tissues: a table with links to Ensembl, GeneCard, and OMIM for each gene for quick referencing, and a table containing expression levels for each selected gene in each selected tissue. The tables can be arranged or sorted to the user’s preference, and can be easily downloaded for local use. 
 
-```{r appScreenshots, echo = F, fig.cap = 'Various screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. B. Alternative heatmap visualization. C. CRX gene expression heatmap and table information from Macosko et al. P14 scRNA-seq. D. t-SNE visualization of individual cell gene expression profiles from Macosko et al. E. Data table export view. F. Differential gene expression across different tissues and with GO term enrichment. ', fig.width=12}
+```{r appScreenshots, echo = F, fig.cap = appScreenshots_cap, fig.width=12}
+appScreenshots_cap <- fig_cap(name='appScreenshots', caption = 'Various screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. B. Alternative heatmap visualization. C. CRX gene expression heatmap and table information from Macosko et al. P14 scRNA-seq. D. t-SNE visualization of individual cell gene expression profiles from Macosko et al. E. Data table export view. F. Differential gene expression across different tissues and with GO term enrichment. ')
+
 knitr::include_graphics('figures_and_tables/Figure 2.png')
 ```
 
-Heatmaps based on expression can be drawn for selected genes and tissues, and are useful for comparing gene expression across many genes and tissues (Figure \@ref(fig:appScreenshots)B). Finally, a session can be saved or shared by building a custom link for the session with the "Build URL Shortcut" button. 
+Heatmaps based on expression can be drawn for selected genes and tissues, and are useful for comparing gene expression across many genes and tissues (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'B')`). Finally, a session can be saved or shared by building a custom link for the session with the "Build URL Shortcut" button. 
 
 ## Differential expression and gene ontology enrichment tests 
-Using our expression data, we performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in the GTEx data set, allowing users to quickly identify eye specific genes. The user can view the results under the ‘Differential’ selection under the ‘expression’ tab (Figure \@ref(fig:appScreenshots)F).  As with expression, the user can select which version of the web app to draw data from as well as select for gene or transcript level comparisons. The user additionally has the option to select different gene classes to examine, protein coding, lincRNA etc. 
+Using our expression data, we performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in the GTEx data set, allowing users to quickly identify eye specific genes. The user can view the results under the ‘Differential’ selection under the ‘expression’ tab (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'F')`).  As with expression, the user can select which version of the web app to draw data from as well as select for gene or transcript level comparisons. The user additionally has the option to select different gene classes to examine, protein coding, lincRNA etc. 
 
 The results of differential expression are presented in a tabular format showing log2 fold change, average expression, and different statistical values. The table can be easily searched for any given gene, viewed and ordered to the user’s preference, and downloaded in CSV format. Differential expression can be visualized through fold change bar graphs in the ‘pan-tissue plots’ section under expression. Additionally, we performed GO enrichment for all differential comparisons. Enriched GO terms are presented first as a word cloud, for quick comparison of GO enrichment.  We provide tables, with similar viewing options as the differential expression table, for enriched GO terms in each class of a given differential comparison.
 
 ## Gene expression in individual retina cells types with scRNA-seq 
-We provide scRNA-seq data from murine retina across two studies [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. This allows researchers to quickly examine gene expression across individual cell types in the retina. Single cell gene expression data is visualized through a heatmap showing the expression of a gene across multiple retinal cell types and different developmental time points (E11-P14, if available), and a table of expression values is generated containing the expression data used to draw the heatmap (Figure \@ref(fig:appScreenshots)C). We also provide t-SNE/UMAP based clustering using cell type specific labeling created by the publishing authors (Figure \@ref(fig:appScreenshots)D, see Methods). The plots show all cell types present a given developmental stage, and highlights cells expressing a gene above a user given level. 
+We provide scRNA-seq data from murine retina across two studies [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. This allows researchers to quickly examine gene expression across individual cell types in the retina. Single cell gene expression data is visualized through a heatmap showing the expression of a gene across multiple retinal cell types and different developmental time points (E11-P14, if available), and a table of expression values is generated containing the expression data used to draw the heatmap (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'C')`). We also provide t-SNE/UMAP based clustering using cell type specific labeling created by the publishing authors (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'D, see Methods')`). The plots show all cell types present a given developmental stage, and highlights cells expressing a gene above a user given level. 
 
 ## Retina Organoids, Fetal Tissue, and iPSC-derived retina are closely related
 
-There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to answer pan-study questions, we looked at whether at how well these three approaches to generating fetal retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
+There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to generating fetal retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
+
+To evaluate this question, we look at the t-SNE plot of all tissues and focus in on the four types of retina tissue (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`).  
+
+```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F}
+tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes')
+
+tsne_zoom <- tsne_50_prep  %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
+                                                        TRUE ~ Tissue),
+                                      Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
+                                      Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+  filter(Group == 'Retina') %>%
+  mutate( zoom = TRUE )
+
+tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
+                                          TRUE ~ Tissue),
+                        Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
+                        Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+  ggplot(aes(x=X1,y=X2)) +
+  scale_shape_manual(values=c(0:20,35:50)) +
+  geom_point(size=6, alpha=0.1, aes(colour=Group)) +
+  geom_point(size=1, alpha=0.6, position='jitter', aes(shape=Origin)) +
+  xlab('t-SNE 1') + ylab('t-SNE 2') +
+  facet_zoom(xy = Group == 'Retina', zoom.size = 1, zoom.data=zoom) +
+  geom_label_repel(data=tsne_zoom,size = 7, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
+  scale_color_discrete_sequential(palette = 'viridis') + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  scale_fill_continuous(guide = guide_legend()) +
+  theme(legend.position="bottom")
+```
 
 
 
