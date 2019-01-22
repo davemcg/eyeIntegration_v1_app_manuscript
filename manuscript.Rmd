@@ -351,7 +351,8 @@ tsne_50_prep %>%
   scale_color_discrete_sequential(palette = 'viridis') + 
   scale_fill_discrete_sequential(palette = 'viridis') + 
   theme_bw() +
-  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1), ncol=2),
+         shape = guide_legend(ncol =2 )) +
   theme(axis.text.x = element_text(size = 6),
         axis.text.y = element_text(size = 6),
         text = element_text(family = 'Helvetica', size = 6))
