@@ -257,7 +257,7 @@ We provide scRNA-seq data from murine retina across two studies [@clarkComprehen
 
 There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to generating fetal retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
 
-To evaluate this question, we look at the t-SNE plot of all tissues and focus in on the four types of retina tissue (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`).  
+To evaluate this question, we look at the t-SNE plot of all tissues and focus in on the four types of retina tissues (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). We see that there are three distinct groups (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')` [35, 10], [37, 10], and [47, -5]), which correspond to iPSC and Retina Organoid, the three types of developing retina, and adult retina, respectively. Despite the technical differences 
 
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
 tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes')
@@ -347,7 +347,7 @@ tsne_50_prep %>%
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
   #geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 50) + 
-  stat_chull(data=tsne_zoom,aes(fill=Cluster_Tissues), alpha = 0.3) +
+  stat_chull(data=tsne_zoom %>% mutate(`Tissue Cluster` = Cluster_Tissues),aes(fill=`Tissue Cluster`), alpha = 0.3) +
   scale_color_discrete_sequential(palette = 'viridis') + 
   scale_fill_discrete_sequential(palette = 'viridis') + 
   theme_bw() +
