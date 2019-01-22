@@ -138,7 +138,7 @@ tsne_50_prep <- tsne_50 %>%
 tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                                           TRUE ~ Tissue),
                         Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
-                        Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+                        Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE','GTEx'))) %>% 
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
   geom_point(size=16, alpha=0.1, aes(colour=Group)) +
@@ -146,7 +146,7 @@ tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   geom_label_repel(size = 7, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
   theme_bw() +
-  theme(text = element_text(family = 'Helvetica', size = 30)) +
+  theme(text = element_text(family = 'Linux Libertine O', size = 30)) +
   scale_color_discrete_sequential(palette = 'viridis') + 
   guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
@@ -163,7 +163,7 @@ core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% sel
 core_both %>% filter(grepl('Retina|Cornea|Lens|RPE|ESC', Tissue)) %>% unique() %>% mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>% group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
   mutate(Dataset = Version) %>% 
   ggplot(aes(x=Sub_Tissue, y=Count, fill=Tissue, alpha = Dataset)) + geom_bar(stat = 'identity', position = 'dodge') + theme_minimal() + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3)) + scale_colour_manual(values = c('grey','black')) + xlab('') + scale_alpha_manual(values = c(0.5,1)) +
-  theme(text = element_text(family = 'Helvetica', size = 10)) +
+  theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
   scale_fill_discrete_sequential(palette = 'viridis')  
 ```
 
@@ -214,7 +214,10 @@ gtex <- cbind('GTEx', core_tight_2019 %>%
 colnames(gtex) <- c('Group','Pre QC Count', 'Count', 'Tissue Types (Count)')
 # Output <div>
 cat("<div id=\"tbl:tableSampleCounts\">")
-regulartable(table) %>% width(width = c(0.5,1,0.5, 2)) %>% add_footer(., tableSampleCounts_cap) %>% flextable::align(align='center')
+regulartable(table) %>% 
+  width(width = c(0.5,1,0.5, 2)) %>% 
+  flextable::align(align='center') %>% 
+  font(fontname = 'Linux Libertine O', part = 'all')
 # Output Caption (* * for italics)
 cat(paste0("\n*",tableSampleCounts_cap,"*\n"))
 # Output </div>
@@ -225,7 +228,10 @@ cat("</div>")
 tableSampleCountsGTEx_cap <- tab_cap(name='tableSampleCountsGTEx', caption = 'EiaD holds hundreds of GTEx tissues to provide a broad comparison set')
 # Output <div>
 cat("<div id=\"tbl:tableSampleCountsGTEx\">")
-regulartable(gtex) %>% width(width = c(0.5,1,0.5,3)) %>% flextable::align(align='center')
+regulartable(gtex) %>% 
+  width(width = c(0.5,1,0.5,3)) %>% 
+  flextable::align(align='center') %>% 
+  font(fontname = 'Linux Libertine O', part = 'all')
 #Output Caption (* * for italics)
 cat(paste0("\n*",tableSampleCountsGTEx_cap,"*\n"))
 # Output </div>
@@ -253,17 +259,16 @@ The results of differential expression are presented in a tabular format showing
 ## Gene expression in individual retina cells types with scRNA-seq 
 We provide scRNA-seq data from murine retina across two studies [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. This allows researchers to quickly examine gene expression across individual cell types in the retina. Single cell gene expression data is visualized through a heatmap showing the expression of a gene across multiple retinal cell types and different developmental time points (E11-P14, if available), and a table of expression values is generated containing the expression data used to draw the heatmap (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'C')`). We also provide t-SNE/UMAP based clustering using cell type specific labeling created by the publishing authors (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'D, see Methods')`). The plots show all cell types present a given developmental stage, and highlights cells expressing a gene above a user given level. 
 
-## Retina Organoids, Fetal Tissue, and iPSC-derived retina are closely related
+## EiaD 2019 demonstrates that organoids, iPSC-derived, and fetal tissue retina have closely related transcriptomes
+There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to generating developing retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
 
-There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to generating fetal retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
-
-To evaluate this question, we look at the t-SNE plot of all tissues and focus in on the four types of retina tissue (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`).  
+To evaluate this question, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the four types of retina tissue (adult, fetal, iSPC, and organoid) (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). Here we see three distinct groupings: adult retina (2), developing retina (3), and iPSC/undifferentiated (1). We do see several organoid tissues in cluster 1, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the iPSC-based retina samples are older than 50 days. 
 
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
-tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes')
+tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
 
 retina_plus_group <- tsne_50 %>% filter(X1 > 34, X1 < 51, X2 > -25, X2 < 21,sample_accession!='SRS1572426')
-dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 1)
+dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 2)
 
 retina_plus_group$Cluster <- dbscan_cluster$cluster
 col1 = 'X1'
@@ -286,7 +291,8 @@ center_samples <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("sam
 cluster_stats <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("sample_accession", "study_accession", "study_title", "study_abstract", "sample_attribute", "Tissue", "Sub_Tissue", "Origin", "Kept"))  %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   group_by(Cluster) %>%
-  summarise(Cluster_Tissues = paste(unique(Sub_Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
+  summarise(Cluster_Tissues = paste(unique(Sub_Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep='')) %>% 
+  mutate(Cluster_Tissues = paste0(Cluster, ': ', Cluster_Tissues))
 
 # set up for ggplot
 retina_plus_group_prep <- retina_plus_group %>%
@@ -294,7 +300,7 @@ retina_plus_group_prep <- retina_plus_group %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>%
   left_join(., cluster_stats, by=c('Cluster')) %>%
-  mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
+  mutate(Label = Cluster) %>%
   mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
 
 
@@ -304,16 +310,17 @@ tsne_zoom <- retina_plus_group_prep  %>%
   mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                            TRUE ~ Tissue),
          Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
-         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>%
+         Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE','GTEx'))) %>%
   mutate( zoom = TRUE )
-StatChull <- ggproto("StatChull", Stat,
-  compute_group = function(data, scales) {
-    data[chull(data$x, data$y), , drop = FALSE]
-  },
-  
-  required_aes = c("x", "y")
-)
 
+# https://cran.r-project.org/web/packages/ggplot2/vignettes/extending-ggplot2.html
+StatChull <- ggproto("StatChull", Stat,
+                     compute_group = function(data, scales) {
+                       data[chull(data$x, data$y), , drop = FALSE]
+                     },
+                     
+                     required_aes = c("x", "y")
+)
 stat_chull <- function(mapping = NULL, data = NULL, geom = "polygon",
                        position = "identity", na.rm = FALSE, show.legend = NA, 
                        inherit.aes = TRUE, ...) {
@@ -331,38 +338,39 @@ tsne_50_prep %>%
   mutate(Origin = case_when(Age < 30 ~ 'Organoid < 30 days',
                             Age > 30 ~ 'Organoid > 30 days',
                             TRUE ~ Origin)) %>% 
-    mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>% 
-  mutate(Tissue = case_when(sample_accession == 'SRS1572426' ~ 'Retina',
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days')),
+         Tissue = case_when(sample_accession == 'SRS1572426' ~ 'Retina',
                             TRUE ~ Tissue)) %>% 
   mutate(ZoomTissue = case_when((Tissue == 'Retina' & Sub_Tissue != 'Retina - Adult Tissue') | Tissue == 'ESC' ~ 'Early Retina',
-                                 TRUE ~ Sub_Tissue)) %>% 
-  mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
-                                          TRUE ~ Tissue),
-                        Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
-                        Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+                                TRUE ~ Sub_Tissue),
+         Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
+                           TRUE ~ Tissue),
+         Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)) %>% 
+  mutate(Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE','GTEx'))) %>% 
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
   #geom_point(size=8, alpha=0.2, aes(colour=Group)) +
-  geom_point(size=2, alpha=0.8, position='jitter', aes(shape=Origin, colour = Group)) +
+  geom_point(size=4, alpha=1, aes(shape=Origin, colour = Group)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
-  #geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 50) + 
-  stat_chull(data=tsne_zoom,aes(fill=Cluster_Tissues), alpha = 0.3) +
+  geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
+  stat_chull(data=tsne_zoom %>% 
+               mutate(`Tissue Cluster` = Cluster_Tissues),aes(fill=`Tissue Cluster`), alpha = 0.3) +
   scale_color_discrete_sequential(palette = 'viridis') + 
-  scale_fill_discrete_sequential(palette = 'viridis') + 
+  scale_fill_viridis_d(option = 'plasma') +
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), ncol=2),
          shape = guide_legend(ncol =2 )) +
   theme(axis.text.x = element_text(size = 6),
         axis.text.y = element_text(size = 6),
-        text = element_text(family = 'Helvetica', size = 6))
+        text = element_text(family = 'Linux Libertine O', size = 6))
 
 ```
 
 
 
 ## Data accessibility 
-Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code used to generate data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
+Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code for the data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. The code used to create this manuscript's figures and layout can be accessed at https://github.com/davemcg/eyeIntegration_v1_app_manuscript. 
 
 # Conclusions
 
