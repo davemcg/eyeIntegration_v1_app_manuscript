@@ -145,7 +145,7 @@ tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx
   geom_point(size=6, alpha=0.6, position='jitter', aes(shape=Origin)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   geom_label_repel(size = 7, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
-  theme_minimal() +
+  theme_bw() +
   theme(text = element_text(family = 'Helvetica', size = 30)) +
   scale_color_discrete_sequential(palette = 'viridis') + 
   guides(colour = guide_legend(override.aes = list(alpha = 1)))
@@ -352,9 +352,9 @@ tsne_50_prep %>%
   scale_fill_discrete_sequential(palette = 'viridis') + 
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
-  theme(axis.text.x = element_text(size = 8),
-        axis.text.y = element_text(size = 8),
-        text = element_text(family = 'Helvetica', size = 8))
+  theme(axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
+        text = element_text(family = 'Helvetica', size = 6))
 
 ```
 
