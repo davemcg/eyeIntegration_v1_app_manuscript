@@ -78,7 +78,7 @@ We generated sample level two-dimensional groupings by with the t-Stochastic Nei
 We used the cleaned data to determine differential gene expression between different sub-tissue types. First, we generated a synthetic body set to serve as single representative sub-tissue type for pan-body gene expression by randomly sampling GTEx tissues.  We used the voom function from the Limma R package to convert gene expression to precision weights, and then performed pairwise differential expression tests for all combinations of sub-tissues using an empirical Bayes test. We extracted significant genes (FDR p <.05) for each eye sub-tissue vs body comparisons and used these to calculate GO enrichment for each eye sub-tissue. The significant gene list for each eye sub-tissue was split into upregulated and down regulated sets and each set was tested for enrichment using the enrichGO function from the clusterProfiler R  package (q-value < 0.01) [@yuClusterProfilerPackageComparing2012].  
 
 ## eyeIntegration web app and R package
-The data generated in the above steps is consolidated into a SQLite database, with the original EiaD data from 2017 and the new 2019 EiaD dataset each getting a separated database file. The code that creates the eyeIntegration web app is written in Shiny and R and has been wrapped into an R package (https://github.com/davemcg/eyeIntegration_app/) that can be deployed on a local computer or a web server (https://eyeIntegration.nei.nih.gov). The app can be deployed on a local computer with 40GB of free disk space by running three commands in R: "devtools::install_github('davemcg/eyeIntegration_app')", "eyeIntegrationApp::get_eyeIntegration_datasets()", and  "eyeIntegrationApp::run_eyeIntegration()". 
+The data generated in the above steps is consolidated into a SQLite database, with the original EiaD data from 2017 and the new 2019 EiaD dataset each getting a separated database file. The code that creates the eyeIntegration web app is written in Shiny and R and has been wrapped into an R package (https://github.com/davemcg/eyeIntegration_app/) that can be deployed on a local computer or a web server (https://eyeIntegration.nei.nih.gov). The app can be deployed on a local computer with 30GB of free disk space by running three commands in R: "devtools::install_github('davemcg/eyeIntegration_app')", "eyeIntegrationApp::get_eyeIntegration_datasets()", and  "eyeIntegrationApp::run_eyeIntegration()". 
 
 ## Snakemake reproducible pipeline
 While the sample search and metadata parsing in a semi-curated process, the processing from the raw data to the creation of the SQLite EiaD database underlying eyeIntegration is wrapped in a Snakemake pipeline, which ensures full reproducibility of the results [@kosterSnakemakeScalableBioinformatics2012]. We make the code for the pipeline available at https://github.com/davemcg/eyeIntegration_data_build. 
@@ -163,7 +163,8 @@ core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% sel
 core_both %>% filter(grepl('Retina|Cornea|Lens|RPE|ESC', Tissue)) %>% unique() %>% mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>% group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
   mutate(Dataset = Version) %>% 
   ggplot(aes(x=Sub_Tissue, y=Count, fill=Tissue, alpha = Dataset)) + geom_bar(stat = 'identity', position = 'dodge') + theme_minimal() + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3)) + scale_colour_manual(values = c('grey','black')) + xlab('') + scale_alpha_manual(values = c(0.5,1)) +
-  theme(text = element_text(family = 'Helvetica', size = 10))
+  theme(text = element_text(family = 'Helvetica', size = 10)) +
+  scale_fill_discrete_sequential(palette = 'viridis')  
 ```
 
 
@@ -278,7 +279,7 @@ center_samples <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("sam
   mutate(Distance = (!!sym(col1)-C1)+(!!sym(col2)-C2)) %>%
   group_by(Cluster) %>%
   dplyr::slice(which.min(Distance)) %>%
-  dplyr::slice(1) %>% 
+  dplyr::slice(1) %>%
   .[['sample_accession']]
 
 # cluster stats
@@ -288,10 +289,10 @@ cluster_stats <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("samp
   summarise(Cluster_Tissues = paste(unique(Sub_Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
 
 # set up for ggplot
-retina_plus_group_prep <- retina_plus_group %>% 
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 40 days', 'Organoid > 40 days'))) %>%
+retina_plus_group_prep <- retina_plus_group %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
-  select(-Cluster_Tissues) %>% 
+  select(-Cluster_Tissues) %>%
   left_join(., cluster_stats, by=c('Cluster')) %>%
   mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
   mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
@@ -299,39 +300,62 @@ retina_plus_group_prep <- retina_plus_group %>%
 
 
 
-tsne_zoom <- retina_plus_group_prep  %>% 
+tsne_zoom <- retina_plus_group_prep  %>%
   mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                            TRUE ~ Tissue),
          Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
-         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
+         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>%
   mutate( zoom = TRUE )
+StatChull <- ggproto("StatChull", Stat,
+  compute_group = function(data, scales) {
+    data[chull(data$x, data$y), , drop = FALSE]
+  },
+  
+  required_aes = c("x", "y")
+)
+
+stat_chull <- function(mapping = NULL, data = NULL, geom = "polygon",
+                       position = "identity", na.rm = FALSE, show.legend = NA, 
+                       inherit.aes = TRUE, ...) {
+  layer(
+    stat = StatChull, data = data, mapping = mapping, geom = geom, 
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, ...)
+  )
+}
 
 tsne_50_prep %>% 
   rowwise() %>% 
-  mutate(Age = as.integer(str_split(sample_attribute, '_')[[1]][2])) %>% 
+  mutate(Age = suppressWarnings(as.integer(str_split(sample_attribute, '_')[[1]][2]))) %>% 
   mutate(Origin = as.character(Origin)) %>% 
-  mutate(Origin = case_when(Age < 40 ~ 'Organoid < 40 days',
-                            Age > 40 ~ 'Organoid > 40 days',
+  mutate(Origin = case_when(Age < 30 ~ 'Organoid < 30 days',
+                            Age > 30 ~ 'Organoid > 30 days',
                             TRUE ~ Origin)) %>% 
-    mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 40 days', 'Organoid > 40 days'))) %>% 
+    mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>% 
   mutate(Tissue = case_when(sample_accession == 'SRS1572426' ~ 'Retina',
                             TRUE ~ Tissue)) %>% 
+  mutate(ZoomTissue = case_when((Tissue == 'Retina' & Sub_Tissue != 'Retina - Adult Tissue') | Tissue == 'ESC' ~ 'Early Retina',
+                                 TRUE ~ Sub_Tissue)) %>% 
   mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                                           TRUE ~ Tissue),
                         Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
                         Group = factor(Group, levels = c('GTEx', 'Cornea', 'ESC', 'Lens', 'Retina', 'RPE'))) %>% 
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
-  geom_point(size=8, alpha=0.2, aes(colour=Group)) +
-  geom_point(size=2, alpha=0.4, position='jitter', aes(shape=Origin)) +
+  #geom_point(size=8, alpha=0.2, aes(colour=Group)) +
+  geom_point(size=2, alpha=0.8, position='jitter', aes(shape=Origin, colour = Group)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
-  facet_zoom(xy = Group == 'Retina', zoom.size = 2, zoom.data=zoom, horizontal = F) +
+  facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
   #geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 50) + 
+  stat_chull(data=tsne_zoom,aes(fill=Cluster_Tissues), alpha = 0.3) +
   scale_color_discrete_sequential(palette = 'viridis') + 
+  scale_fill_discrete_sequential(palette = 'viridis') + 
+  theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme(axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 8),
         text = element_text(family = 'Helvetica', size = 8))
+
 ```
 
 
