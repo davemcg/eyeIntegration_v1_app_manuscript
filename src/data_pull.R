@@ -11,4 +11,12 @@ load('data/human_tx_studies.Rdata')
 tsne_50 <- gene_pool_2019 %>% tbl('tSNE_bulk_RNA') %>% filter(Perplexity == 45) %>% as_tibble()
 gene_anno <- gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()
 tx_anno <- gene_pool_2019 %>% tbl('tx_IDs') %>% as_tibble()
-save(core_tight_2017, core_tight_2019, tsne_50, gene_anno, tx_anno, file = 'data/data_pull.Rdata')
+limma_DE_tests <- gene_pool_2019 %>% tbl('limma_DE_tests') %>% as_tibble()
+q01_limma_gene_sig <- gene_pool_2019 %>% tbl('limma_DE_gene') %>% filter(adj.P.Val < 0.01) %>% group_by(Comparison) %>% summarise(Count=n()) %>% as_tibble()
+save(core_tight_2017, 
+     core_tight_2019, 
+     tsne_50, gene_anno, 
+     tx_anno, 
+     limma_DE_tests, 
+     q01_limma_gene_sig,
+     file = 'data/data_pull.Rdata')
