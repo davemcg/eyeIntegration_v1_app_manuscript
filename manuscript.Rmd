@@ -38,6 +38,8 @@ library(flextable)
 library(captioner)
 library(dbscan)
 library(ggforce)
+library(cowplot)
+library(viridis)
 
 # setup caption-ing
 fig_cap <- captioner("Figure")
@@ -50,6 +52,8 @@ supTab_cap <- captioner("Supplemental Table")
 load('data/data_pull.Rdata')
 # vinny sra search
 load('data/human_tx_studies.Rdata')
+# source('src/tsne_and_pca_calcs.R')
+load('data/dimRed_plot_data.Rdata')
 ```
 
 # Abstract (I write this damn section last)
@@ -369,7 +373,7 @@ tsne_50_prep %>%
 
 
 ## Data accessibility 
-Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code for the data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
+Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
 
 # Conclusions (need more fleshing out)
 
@@ -387,16 +391,13 @@ snakemakeDAG_cap <- supFig_cap(name='snakemakeDAG', caption = 'Snakemake pipelin
 knitr::include_graphics('figures_and_tables/2019_workflow.png')
 ```
 
-
 ```{r allSamplePCA, echo = F, message = F, warning=F, fig.height = 8, fig.width = 10, fig.pos='H', fig.cap = pca_cap}
 # fig.pos = 'H' puts figure here, not where knitr / pandoc think is best
 
 pca_cap <- supFig_cap(name='allSamplePCA', caption = 'PCA plot of all samples demonstrates non-eye tissue most similar to adult retina is the brain, pituitary most similar to adult RPE, and skin and blood similar to cornea.')
 
-library(cowplot)
-# data processed with src/tsne_and_pca_calcs.R
-
-load('data/dimRed_plot_data.Rdata')
+colors = viridis(n=6, direction = -1)
+colors[5] <- "red"
 
 # pca
 make_pca_tissue <- function(tissue = 'Brain'){
@@ -416,10 +417,10 @@ make_pca_tissue <- function(tissue = 'Brain'){
     xlab('PCA 1') + ylab('PCA 2') +
     theme_bw() +
     theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
-    scale_color_discrete_sequential(palette = 'viridis') + 
+    scale_color_manual(values = colors) + 
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 }
-theme_set(theme_cowplot(font_size=10,font_family = "Helvetica")) 
+theme_set(theme_cowplot(font_size=10)) 
 plot_grid(make_pca_tissue('Brain'), make_pca_tissue('Pituitary'),
           make_pca_tissue('Blood'), make_pca_tissue('Skin'),
           labels = c('A: Brain','B: Pituitary','C: Blood','D: Skin'),
