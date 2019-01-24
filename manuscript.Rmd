@@ -59,7 +59,7 @@ load('data/dimRed_plot_data.Rdata')
 # run 'src/viewing_stats.Rmd'
 load('data/visitor_stats.Rdata')
 # write supplementary file for metadata
-write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
+# write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
 ```
 
 
