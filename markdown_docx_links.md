@@ -7,3 +7,6 @@ https://community.rstudio.com/t/figure-caption-in-r-markdown/6951 | captioner fo
 https://github.com/lierdakil/pandoc-crossref/issues/175 | caption for flextable (flextable is the ONLY easy option to get a latex like table in word). Have to use this annoying code bit to get captions for some reason.
 https://stackoverflow.com/questions/52918716/authors-and-affiliations-in-the-yaml-of-rmarkdown | Custom lua code to get author affiliations in top of docx
 https://github.com/pandoc/lua-filters | repo for above lua code (use  scholarly-metadata and author-info-blocks)
+http://tc.rbind.io/post/2017/07/07/citing-in-rmarkdown-using-zotero/ | Citations! Use Zotero + citr + better bibtex
+https://github.com/retorquere/zotero-better-bibtex | bibtex
+https://github.com/crsh/citr | citr
