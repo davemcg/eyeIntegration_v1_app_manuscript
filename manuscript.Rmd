@@ -60,6 +60,22 @@ load('data/dimRed_plot_data.Rdata')
 load('data/visitor_stats.Rdata')
 # write supplementary file for metadata
 # write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
+
+core_tight_2019 <- core_tight_2019 %>% mutate(Origin = case_when( grepl('Transformed', Sub_Tissue, ignore.case = T) ~ 'Cell Line',
+                                               grepl('Fetal', Sub_Tissue) ~ 'Fetal Tissue',
+                                               grepl('Stem', Sub_Tissue) ~ 'Stem Cell',
+                                               grepl('Organoid', Sub_Tissue) ~ 'Organoid',
+                                               grepl('Cell Line', Sub_Tissue) ~ 'Cell Line',
+                                               TRUE ~ 'Adult Tissue')) %>% 
+  select(-run_accession) %>% 
+                     unique() 
+
+# set up maps
+visitorMap_cap <- supFig_cap(name='visitorMap', caption = paste('As of January 2019, eyeIntegration has had usage across', cities %>% unique() %>% length(), 'cities and', geo_locate$countries %>% unique() %>% length(), 'countries.'))
+
+world <- map_data("world")
+world <- world[world$region != "Antarctica",]
+
 ```
 
 
@@ -68,53 +84,55 @@ load('data/visitor_stats.Rdata')
 # Introduction
 
 ## RNA-seq is the predominant technology for deciphering transcriptomes
-From anterior to posterior, the human eye is composed of the cornea, lens, retina, and RPE (choroid). The development and function of these tissues is mediated through tissue and temporal specific transcript and gene expression patterns, or transcriptome. Today, RNA-sequencing (RNA-seq) is the predominant technology in quantification of the transcriptome. Analysis of gene patterns across tissue, time, and perturbation allows researchers to decipher the genetic controls of eye development and function. To this end researchers have used a wide variety of tissue types to assess gene function, including primary tissue (fetal and post-mortem), induced pluripotent stem cell (iPSC) derived cells, immortalized cell lines, and most recently, organoids. These tissue types have been deeply sequenced across the cornea [@chenIdentificationNovelMolecular2013a; @chngHighThroughputGene2013a; @chungTranscriptomicProfilingPosterior2017; @fraustoTranscriptomicAnalysisCultured2016a; @kabzaCollagenSynthesisDisruption2017; @ouyangWNT7APAX6Define2014a; @songDirectedDifferentiationHuman2016a], lens [@hanWnt5aContributesDifferentiation2018], retina [@aldiriDynamicEpigeneticLandscape2017a; @farkasTranscriptomeAnalysesHuman2013b; @hoshinoMolecularAnatomyDeveloping2017; @kaewkhawTranscriptomeDynamicsDeveloping2015; @kaewkhawTreatmentParadigmsRetinal2016; @liComprehensiveAnalysisGene2014a; @mustafiTranscriptomeAnalysisReveals2016; @pinelliAtlasGeneExpression2016; @whitmoreTranscriptomicAnalysisNasal2014b], and RPE (choroid) [@darrowDeletionDXZ4Human2016a; @harenzaTranscriptomicProfiling392017; @huIdentificationMiRNASignatures2012b; @liComprehensiveAnalysisGene2014a; @nozawaSAFARegulatesInterphase2017; @obersteinCellularResponsesHuman2017; @pengEngineeringBloodRetinalBarrier2013; @radekeRestorationMesenchymalRetinal2015a; @sainiNicotinamideAmelioratesDisease2017; @samuelAppropriatelyDifferentiatedARPE192017; @santaguidaAneuploidyinducedCellularStresses2015b; @shaoSpontaneousGenerationNovel2017; @shihRestorationMesenchymalRPE2017; @smithRetinalPigmentEpithelial2017; @stevensonGiantinknockoutModelsReveal2017; @tresiniCoreSpliceosomeTarget2015; @whewaySiRNAbasedFunctionalGenomics2015; @whitmoreTranscriptomicAnalysisNasal2014b; @auCharacterizationLincRNAExpression2017]. 
+From anterior to posterior, the human eye is composed of the cornea, lens, retina, retinal pigment epithelium (RPE), and choroid. The differentiation, development, and function of these tissues is mediated through tissue and temporal specific transcript and gene expression patterns, also known as the transcriptome. Today, RNA-sequencing (RNA-seq) is the predominant technology for quantifying the transcriptome. Analysis of the transcriptome across tissue, time, and perturbation allows researchers to decipher the genetic controls of eye development and function. To this end researchers have used a wide variety of tissue types to assess gene function, including primary tissue (fetal and post-mortem), induced pluripotent stem cell (iPSC) derived cells, immortalized cell lines, and most recently, organoids. These tissue types have been deeply sequenced across the cornea [@chenIdentificationNovelMolecular2013a; @chngHighThroughputGene2013a; @chungTranscriptomicProfilingPosterior2017; @fraustoTranscriptomicAnalysisCultured2016a; @kabzaCollagenSynthesisDisruption2017; @ouyangWNT7APAX6Define2014a; @songDirectedDifferentiationHuman2016a], lens [@hanWnt5aContributesDifferentiation2018], retina [@aldiriDynamicEpigeneticLandscape2017a; @farkasTranscriptomeAnalysesHuman2013b; @hoshinoMolecularAnatomyDeveloping2017; @kaewkhawTranscriptomeDynamicsDeveloping2015; @kaewkhawTreatmentParadigmsRetinal2016; @liComprehensiveAnalysisGene2014a; @mustafiTranscriptomeAnalysisReveals2016; @pinelliAtlasGeneExpression2016; @whitmoreTranscriptomicAnalysisNasal2014b], and RPE (choroid) [@darrowDeletionDXZ4Human2016a; @harenzaTranscriptomicProfiling392017; @huIdentificationMiRNASignatures2012b; @liComprehensiveAnalysisGene2014a; @nozawaSAFARegulatesInterphase2017; @obersteinCellularResponsesHuman2017; @pengEngineeringBloodRetinalBarrier2013; @radekeRestorationMesenchymalRetinal2015a; @sainiNicotinamideAmelioratesDisease2017; @samuelAppropriatelyDifferentiatedARPE192017; @santaguidaAneuploidyinducedCellularStresses2015b; @shaoSpontaneousGenerationNovel2017; @shihRestorationMesenchymalRPE2017; @smithRetinalPigmentEpithelial2017; @stevensonGiantinknockoutModelsReveal2017; @tresiniCoreSpliceosomeTarget2015; @whewaySiRNAbasedFunctionalGenomics2015; @whitmoreTranscriptomicAnalysisNasal2014b; @auCharacterizationLincRNAExpression2017]. 
 
 ## GTEx is a tremendously useful gene expression resource that, unfortunately, lacks eye tissues 
-The Gene Tissue Expression (GTEx) Project has generated RNA-seq data across dozens of post-mortem human tissues and hundreds unique donors and presented the gene and transcript level data in a efficient web app (https://gtexportal.org/) [@carithersNovelApproachHighQuality2015; @gtexconsortiumGeneticEffectsGene2017]. Unfortunately, no eye tissues are included. Two groups have quantified huge portions of the RNA-seq data, including some human eye tissues, from the Sequence Read Archive (SRA): recount2 and ARCHS4 [@collado-torresReproducibleRNAseqAnalysis2017; @lachmannMassiveMiningPublicly2018]. However no curation of the sample level metadata was done, so it is very difficult to parse out which eye tissues are exactly present and, more importnatly, to determine whether any samples were chemically or genetically perturbed. More targeted web resources that allow researchers to quickly assess gene expression in eye tissues include iSYTE, EXPRESS, and retina.Tigem.it [@budakExpressDatabaseTranscriptome2018a; @kakranaISyTEDatabaseExpressionbased2018; @pinelliAtlasGeneExpression2016]. iSYTE only includes lens samples, EXPRESS is limited to a subset of mouse lens and retina samples, and retina.Tigem.it is retina only. 
+The Genotype-Tissue Expression (GTEx) Project has generated RNA-seq data across dozens of post-mortem human tissues from hundreds of unique donors and presented the gene and transcript level data in a efficient web app (https://gtexportal.org/) [@carithersNovelApproachHighQuality2015; @gtexconsortiumGeneticEffectsGene2017]. Unfortunately, no eye tissues are included. The Sequence Read Archive (SRA) and European Nucleotide Archive (ENA) are the primary repositories for all raw sequence data and two groups have quantified huge portions of the RNA-seq data, including some human eye tissues, from the (SRA: recount2 and ARCHS4 [@collado-torresReproducibleRNAseqAnalysis2017; @lachmannMassiveMiningPublicly2018]. However no curation of the sample level metadata was done, so it is challenging to parse out which eye tissues are present and even more difficult to determine whether any samples were chemically or genetically perturbed. More targeted web resources that allow researchers to quickly assess gene expression in eye tissues include iSYTE, EXPRESS, and retina.Tigem.it [@budakExpressDatabaseTranscriptome2018a; @kakranaISyTEDatabaseExpressionbased2018; @pinelliAtlasGeneExpression2016]. iSYTE only includes lens samples, EXPRESS is limited to a subset of mouse lens and retina samples, and retina.Tigem.it is retina only. 
 
-## eyeIntegration app reactively serves huge GTEx and human eye tissue dataset - EiaD
-The eyeIntegration web resource (https://eyeIntegration.nei.nih), originally released in 2017, provided the largest set of hand-curated human eye tissues along with hundreds of GTEx tissue samples [@Bryan_2018]. This dataset was served in a responsive web app allowing for quick comparisons across many eye tissues and dozens of other body tissues. In order to better serve the eye research community, we have re-written the bioinformatic pipeline that creates the Eye in a Disk (EiaD) datasets for eyeIntegration to nearly fully automate the EiaD creation, ensure full reproducbility of the results, allow for external data comparison, provide consistent sample quality control, and improve efficiency for future sample updates. Additionally, we are prototyping new tools to display murine single cell RNA-seq (scRNA-seq) data to provide researchers access to information about cell type specific gene expression in retinal development. The 2019 EiaD dataset contains several new tissue types, full gene product quantification, along with over 100 new samples. The eyeIntegration web app has also been re-written to provide many new features, including versioned EiaD datasets, custom URL shortcut creation, new visualizations, improved data tables searching, easy download of core datasets, and local install of the entire app with three commands. 
+## eyeIntegration app reactively serves huge GTEx and human eye tissue datasets (EiaD)
+The eyeIntegration web resource (https://eyeIntegration.nei.nih), originally released in 2017, provided the largest set of hand-curated human eye tissues along with hundreds of GTEx tissue samples [@Bryan_2018]. This responsive web app allowed for quick comparisons across many eye tissues and dozens of other body tissues. The dataset that the original eyeIntegration web app served was created with a series of scripts, several of which were run interactively to hand-assess quality control for the samples. The interactive nature of some of the steps precludes efficient and regular updates for the data.
+
+In order to better serve the eye research community with regular, versioned updates, we have re-written the bioinformatic pipeline that creates the eye and body RNA-seq dataset for eyeIntegration. We call this reproducible and versioned transcriptome dataset Eye in a Disk (EiaD). The pipeline nearly fully automates the EiaD creation, ensure full reproducbility of the results, allow for external data comparison, providse consistent sample quality control, and improves efficiency for future sample updates. The 2019 EiaD dataset contains several new tissue types, full gene product quantification, along with over 100 new samples. The eyeIntegration web app has also been re-written to provide many new features, including versioned EiaD datasets, custom URL shortcut creation, new visualizations, improved data tables searching, easy download of core datasets, and local install of the entire app with three commands. Additionally, we are prototyping new tools to display single cell RNA-seq (scRNA-seq) data to provide researchers access to cell type specific information about gene expression across murine retinal development.
 
 # Methods
 ## Identifying potential eye samples with exhaustive search of SRA
-We searched the SRA with the SRAdb R package for eye related tissues using the query ‘cornea|retina|RPE|ocular|eye’ across all columns and rows in the 'sra' table [@leinonenSequenceReadArchive2011; @zhuSRAdbQueryUse2013a]. We hand selected relevant studies and selected healthy, control or unmodified samples spanning primary adult tissue, primary fetal tissue, iPSC derived tissue, organoids, and immortalized cell lines. In order to compare gene expression in the eye against expression in other body tissues, we obtained samples from `r core_tight_2019 %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% unique() %>% length()` different body tissues that contained at least 10 male and 10 female samples from the GTEx project. Using SRA metadata from each study we extracted sample and run accessions, library type, tissue of origin, and sub-tissue of origin. Any of the preceding information missing from the SRA metadata was added by hand, when available. Stem cell derived tissues and cell lines are marked as sub-tissues of the tissue they model.
+We searched the SRA with the SRAdb R package for eye related tissues using the query ‘cornea|retina|RPE|macula|fovea|choroid|sclera|iris|lens|eye’ across all columns and rows in the 'sra' table [@leinonenSequenceReadArchive2011; @zhuSRAdbQueryUse2013a]. We hand selected relevant studies and selected healthy, control or unmodified samples spanning primary adult tissue, primary fetal tissue, iPSC derived tissue, organoids, and immortalized cell lines. In order to compare gene expression in the eye against expression in other body tissues, we obtained samples from `r core_tight_2019 %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% unique() %>% length()` different body tissues that contained at least 10 male and 10 female samples from the GTEx project. Using SRA metadata from each study we extracted sample and run accessions, library type, tissue of origin, and sub-tissue of origin. Any of the preceding information missing from the SRA metadata was added by hand, when available. Stem cell derived tissues and cell lines are marked as sub-tissues of the tissue they model.
 
 ## Raw data download and quantification
-We downloaded the relevant SRA files for each sample directly from the NCBI ftp server using the file transfer software Aspera. SRA files were converted to FASTQ format using the tool fastq-dump from the SRAtoolkit software package. Samples only available in the BAM format were converted to FASTQ format using SAMTools [@liSequenceAlignmentMap2009]. Sample transcriptomes were quantified using the alignment free quantification software Salmon, using transcriptomic index built from gencode v28 protein coding transcript sequences using the transcriptomic aligner Salmon [@harrowGENCODEReferenceHuman2012; @patroSalmonProvidesFast2017a]. Using the resulting expression quantification, we identified lowly or unused transcripts within annotation, and removed transcripts that accounted for 5% or less of the total expression for its parent gene as per Sonneson et al [@sonesonIsoformPrefilteringImproves2016]. Samples were re-quantified against a transcriptomic index built on the filtered transcript sequences. The Salmon count values were were quantified as (transcript) length scaled Transcripts Per Million (TPM) to the transcript and gene level using tximport [@sonesonDifferentialAnalysesRNAseq2016a].  
+We downloaded the relevant SRA files for each sample directly from the NCBI ftp server using the file transfer software Aspera. SRA files were converted to FASTQ format using the tool fastq-dump from the SRAtoolkit software package [@leinonenSequenceReadArchive2011]. Samples only available in the BAM format were converted to FASTQ format using SAMTools [@liSequenceAlignmentMap2009]. Sample transcriptomes were quantified using the alignment free quantification software Salmon, using transcriptomic index built from gencode v28 protein coding transcript sequences using the transcriptomic aligner Salmon [@harrowGENCODEReferenceHuman2012; @patroSalmonProvidesFast2017a]. Using the resulting expression quantification, we identified lowly or unused transcripts within the gencode annotation, and removed transcripts that accounted for 5% or less of the total expression for its parent gene as per Sonneson et al [@sonesonIsoformPrefilteringImproves2016]. Samples were re-quantified against a transcriptomic index built on the filtered transcript sequences. The Salmon count values were were quantified as (transcript) length scaled Transcripts Per Million (TPM) to the transcript and gene level using tximport [@sonesonDifferentialAnalysesRNAseq2016a].  
 
 ## Quality control 
-We began the quality control procedure by removing samples with a Salmon calculated mapping rate less than 50%. We further filtered samples by calculating the median gene expression for each sample and only kept sample that had a median count >2 across all genes. We removed lowly expressed genes by calculating the median expression across all samples for each gene and kept genes that had a median count >200 across all samples. To reduce the noise experimental variability between each study, we normalized samples by library using the calcNormFactors function from the edgeR r-package, and then quantile smoothed expression data using the R package qsmooth [@hicksSmoothQuantileNormalization2018a; @robinsonEdgeRBioconductorPackage2010].  
+We began the quality control procedure by removing samples with a Salmon calculated mapping rate less than 50%. We further filtered samples by calculating the median gene expression for each sample and only kept samples that had a median count >2 across all genes. We removed lowly expressed genes by calculating the median expression across all samples for each gene and kept genes that had a median count >200 across all samples. To reduce the noise from experimental variability between each study, we normalized samples by sequence library size using the calcNormFactors function from the edgeR r-package, and then quantile smoothed expression data using the R package qsmooth at the tissue level [@hicksSmoothQuantileNormalization2018a; @robinsonEdgeRBioconductorPackage2010].  
 
-We generated sample level two-dimensional groupings by with the t-Stochastic Neighbor Embedding (t-SNE) algorithm, and then calculated the center of the resulting sub-tissue clusters by finding the average coordinate of all samples of a given sub-tissue type [@maatenAcceleratingTSNEUsing2014]. We used these sub-tissues groupings to identify outlier samples, or samples that failed to cluster with other samples of the same sub-tissue type. We calculated the euclidean distance of each sample from its sub-tissue cluster center and removed samples that had distance 4 standard deviations from the average distance. 
+We generated sample level two-dimensional groupings by with the t-Stochastic Neighbor Embedding (t-SNE) algorithm [@maatenAcceleratingTSNEUsing2014]. We then calculated the center of the resulting sub-tissue clusters by finding the average two-dimensional coordinates of all samples of a given sub-tissue type (p1). We used these sub-tissues groupings to identify outlier samples, or samples that failed to cluster with other samples of the same sub-tissue type by measuring the euclidean distance of each sample (p2) from its sub-tissue cluster center and removed samples that had distance 4 standard deviations from the average distance with the equation $dist = \sqrt\sum(p1-p2)^{2}$.  
 
 ## Differential Gene Expression Analysis and GO term enrichment
-We used the cleaned data to determine differential gene expression between different sub-tissue types. First, we generated a synthetic body set to serve as single representative sub-tissue type for pan-body gene expression by randomly sampling GTEx tissues.  We used the voom function from the Limma R package to convert gene expression to precision weights, and then performed pairwise differential expression tests for all combinations of sub-tissues using an empirical Bayes test. We extracted significant genes (FDR p < 0.01) for all `r limma_DE_tests %>% nrow()` comparisons and used these to calculate GO enrichment. The significant gene list for each eye sub-tissue was split into upregulated and down regulated sets and each set was tested for enrichment using the enrichGO function from the clusterProfiler R package (q-value < 0.01) [@yuClusterProfilerPackageComparing2012].
+We used the cleaned data to determine differential gene expression between different sub-tissue types. First, we generated a synthetic body set to serve as single representative sub-tissue type for pan-body gene expression by randomly sampling GTEx tissues.  We used the voom function from the Limma R package to convert gene expression to precision weights, and then performed pairwise differential expression tests for all combinations of sub-tissues using an empirical Bayes test [@ritchieLimmaPowersDifferential2015; @lawVoomPrecisionWeights2014]. We extracted significant genes (FDR p < 0.01) for all `r limma_DE_tests %>% nrow()` comparisons and used these to calculate GO enrichment. The significant gene list for each eye sub-tissue was split into upregulated and down regulated sets and each set was tested for enrichment using the enrichGO function from the clusterProfiler R package (q-value < 0.01) [@yuClusterProfilerPackageComparing2012].
 
 ## eyeIntegration web app and R package
-The data generated in the above steps is consolidated into a SQLite database, with the original EiaD data from 2017 and the new 2019 EiaD dataset each getting a separated database file. The code that creates the eyeIntegration web app is written in Shiny and R and has been wrapped into an R package (https://github.com/davemcg/eyeIntegration_app/) that can be deployed on a local computer or a web server (https://eyeIntegration.nei.nih.gov). The app can be deployed on a local computer with 30GB of free disk space by running three commands in R: "devtools::install_github('davemcg/eyeIntegration_app')", "eyeIntegrationApp::get_eyeIntegration_datasets()", and  "eyeIntegrationApp::run_eyeIntegration()". 
+The data generated in the above steps is consolidated into a SQLite database, with the original dataset for eyeIntegration and the new 2019 EiaD dataset each getting a separate database file. The code that creates the eyeIntegration web app is written in Shiny and R and has been wrapped into an R package (https://github.com/davemcg/eyeIntegration_app/) that can be deployed on a local computer or a web server (https://eyeIntegration.nei.nih.gov). The app can be deployed on a local computer with 35GB of free disk space by running three commands in R: "devtools::install_github('davemcg/eyeIntegration_app')", "eyeIntegrationApp::get_eyeIntegration_datasets()", and  "eyeIntegrationApp::run_eyeIntegration()". 
 
 ## Snakemake reproducible pipeline
-While the sample search and metadata parsing in a semi-curated process, the processing from the raw data to the creation of the SQLite EiaD database underlying eyeIntegration is wrapped in a Snakemake pipeline, which ensures full reproducibility of the results [@kosterSnakemakeScalableBioinformatics2012]. We make the code for the pipeline available at https://github.com/davemcg/eyeIntegration_data_build. 
+While the sample search and metadata parsing in a semi-curated process, the processing from the raw data to the creation of the SQLite EiaD database underlying eyeIntegration is wrapped in a Snakemake pipeline, which ensures full reproducibility of the results [@kosterSnakemakeScalableBioinformatics2012]. We make the code for the pipeline available at https://github.com/davemcg/EiaD_build. 
 
 ## scRNA-seq processing
-The eyeIntegration site currently hosts two large scRNA-seq datasets from Macoscko et al. and a unpublished set kindly made available to the public from Clark et al [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. We use the processed gene count data from each group, as well as the cluster assignments that specify what cell type each individual cell is. The count data is mean averaged to the cell type, age, and gene level for the single cell expression section of eyeIntegration. We also display t-SNE and UMAP-based two-dimensional visualizations of the Macosko and Clark data, respectively, in the web app. For detail so the t-SNE processing we did on the Macosko dataset, see the methods of [@Bryan_2018]. 
+The eyeIntegration site, as of January 2019, hosts two large scRNA-seq datasets from Macosko et al. and Clark et al [@macoskoHighlyParallelGenomewide2015a; @clarkComprehensiveAnalysisRetinal2018]. We use the processed gene count data from each group, as well as their cluster assignments which specify what cell type each individual cell is. The count data is mean averaged to the cell type, age, and gene level for the single cell expression section of eyeIntegration. We also display t-SNE and UMAP-based two-dimensional visualizations of the Macosko and Clark data, respectively, in the web app. For detail so the t-SNE processing we did on the Macosko dataset, see the methods of Bryan et al [@Bryan_2018]. 
 
 ## Manuscript as code
 This manuscript's figures (excepting (Figure 2), tables, and most numbers, are all created and laid out in a R markdown document that interweaves code and text. The knitr and pandoc program is used to lay out the figures and tables and output a docx file. The code that generates this manuscript can be found at https://github.com/davemcg/eyeIntegration_v1_app_manuscript. 
 
 # Results
 
-## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sample along with `r ((core_tight_2019$study_accession %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new studies and `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples, and four new sub-tissue types added to 2019 EiaD dataset
-
-
+## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sub-tissue types along with `r ((core_tight_2019 %>% filter(Kept == 'Kept') %>% pull(study_accession) %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new human eye RNA-seq studies, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples, and many sub-tissue types
 
 ```{r tissueCountsBarPlot, fig.height = 4, fig.cap=tissueCountsBarPlot_cap, echo=F}
-tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption = 'Substantial increase in eye tissue count and type  from 2017 to 2019 EiaD')
+tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption = 'Substantial increase in eye tissue count and type from 2017 to 2019 EiaD. We also improved the metadata labelling for the cornea samples, now delineating endothelial and epithelial tissues.')
 
-core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% select(-run_accession) %>% filter(Kept == 'Kept'), core_tight_2017 %>% mutate(Version = '2017') %>% mutate(Sub_Tissue = gsub('_',' - ', Sub_Tissue))) %>% unique()
+core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% filter(Kept == 'Kept'), core_tight_2017 %>% mutate(Version = '2017') %>% mutate(Sub_Tissue = gsub('_',' - ', Sub_Tissue))) %>% unique()
 
-core_both %>% filter(grepl('Retina|Cornea|Lens|RPE|ESC', Tissue)) %>% unique() %>% mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>% group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
+core_both %>% filter(grepl('Retina|Cornea|Lens|RPE', Tissue)) %>% unique() %>% 
+  #mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>%
+  group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
   mutate(Dataset = Version) %>% 
   ggplot(aes(x=Sub_Tissue, y=Count, fill=Tissue, alpha = Dataset)) + geom_bar(stat = 'identity', position = 'dodge') + theme_minimal() + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3)) + scale_colour_manual(values = c('grey','black')) + xlab('') + scale_alpha_manual(values = c(0.5,1)) +
   theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
@@ -122,9 +140,9 @@ core_both %>% filter(grepl('Retina|Cornea|Lens|RPE|ESC', Tissue)) %>% unique() %
 ```
 
 
-Our initial query to the SRA found `r human_tx_studies$study_accession %>% unique() %>% length()` potentially relevant studies deposited since our last search on January 19, 2017. We removed non-pertinent studies and selected healthy or unmodified tissue from each relevant study for a total, including  of `r core_tight_2019$study_accession %>% unique() %>% length()` studies, `r ((core_tight_2019$study_accession %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` of which are new to the 2019 EiaD dataset. The 2019 EiaD dataset contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession != 'SRP012682') %>% nrow()` human eye tissues and also includes `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% nrow()` GTEx samples across `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` tissues for easy comparison `r tab_cap(name = 'tableSampleCounts', display = 'cite')`, `r supTab_cap(name = 'tableSampleCountsGTEx', display = 'cite')`. The 2019 EiaD contains `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Cornea') %>% nrow()` cornea, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Lens') %>% nrow()` lens, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Retina') %>% nrow()` retina, and `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'RPE') %>% nrow()` RPE (choroid) samples; in total we have added `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples to the 2019 EiaD  (`r fig_cap(name = 'tissueCountsBarPlot', display = 'cite')`). Stem cell derived cornea, stem cell derived lens, fetal retina, and organoid retina are four new types of sub-tissues that are now available in eyeIntegration.
-Another substantial addition to the 2019 EiaD are non-protein coding genes. We now quantify expression across `r gene_anno %>% count(gene_type) %>% as_tibble() %>% nrow()` gene types and  `r tx_anno%>% count(transcript_type) %>% as_tibble() %>% nrow()` transcript types, including protein coding, retained intron, lincRNA, antisense, and pseuodgenes.
+Our initial query to the SRA found `r human_tx_studies$study_accession %>% unique() %>% length()` potentially relevant studies deposited since our last search on January 19, 2017. We removed non-pertinent studies and selected healthy or unmodified tissue from each relevant study for a total, including  of `r core_tight_2019$study_accession %>% unique() %>% length()` studies, `r ((core_tight_2019$study_accession %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` of which are new to the 2019 EiaD dataset. The 2019 EiaD dataset contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession != 'SRP012682') %>% nrow()` human eye tissues and also includes `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% nrow()` GTEx samples across `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` tissues for easy comparison (`r tab_cap(name = 'tableSampleCounts', display = 'cite')`, `r supTab_cap(name = 'tableSampleCountsGTEx', display = 'cite')`). The 2019 EiaD contains `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Cornea') %>% nrow()` cornea, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Lens') %>% nrow()` lens, `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'Retina') %>% nrow()` retina, and `r core_tight_2019 %>% filter(Kept == 'Kept', Tissue == 'RPE') %>% nrow()` RPE (choroid) samples; in total we have added `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples to the 2019 EiaD  (`r fig_cap(name = 'tissueCountsBarPlot', display = 'cite')`). 
 
+Stem cell derived cornea, stem cell derived lens, fetal retina, and organoid retina are four new types of sub-tissues that are now available in eyeIntegration. We have also substantially improved the granualarity of the cornea tissue metadata, now delinerating whether the tissue is from the endothelium or epithelium (`r fig_cap(name = 'tissueCountsBarPlot', display = 'cite')`); previously these had been grouped together as adult tissue. Another substantial addition to the 2019 EiaD are non-protein coding genes. We now quantify expression across `r gene_anno %>% count(gene_type) %>% as_tibble() %>% nrow()` gene types and  `r tx_anno%>% count(transcript_type) %>% as_tibble() %>% nrow()` transcript types, including protein coding, retained intron, lincRNA, antisense, and pseuodgenes.
 
 ## Rigorous quality control and reproducible workflow system ensures high quality transcriptomes that consistently cluster together by tissue type
 ```{bash, echo = F, eval = F}
@@ -133,14 +151,14 @@ Another substantial addition to the 2019 EiaD are non-protein coding genes. We n
 # 46030412878 from running: for i in RE_quant_files/*/lib_format_counts.json; do grep num_compatible_fragments $i; done |  cut -f2 -d":" | cut -f1 -d"," | awk '{sum += $1} END {print sum}'
 ```
 
- 
+
 ```{r workflowDoodle, echo = F, fig.width = 10, fig.height = 10, results='asis', fig.cap = workflowDoodle_cap}
 workflowDoodle_cap <- fig_cap(name='workflowDoodle', caption = paste0('Raw RNA-seq data from the SRA is run through our pipeline to create the EiaD, which is used by eyeIntegration app to serve interactive gene expression visualizations across ', core_tight_2019 %>% pull(Sub_Tissue) %>% unique() %>% length(), ' tissues'))
 
 knitr::include_graphics('figures_and_tables/flow_sketch.png')
 ```
 
-We built an automated pipeline for processing and analyzing all data for the web app using the program Snakemake, a python-based workflow management system that allows for efficient parallel execution of the analysis, facilitates reproduction by others, and simplifies long term maintenance of the EiaD data (`r fig_cap(name='workflowDoodle', display = 'cite')`, `r supFig_cap(name='snakemakeDAG', display = 'cite')`)[@kosterSnakemakeScalableBioinformatics2012]. In order to create a high quality final dataset across the `r core_tight_2019 %>% select(-run_accession) %>% unique() %>% nrow()` initial samples (`r supTab_cap(name = 'metadataTable', display = 'cite')`)  and 46,030,412,878 reads we developed a rigorous quality control procedure as part of our analysis, considering a sample’s read mapping rate and median count level as well as behavior relative to samples of the same sub-tissue type (see Methods).  To identify tube switches or sample extraction issues, we used t-SNE to group samples by sub-tissue type to identify variability within samples of the same sub-tissue and ensure overall consistency in data processing (`r fig_cap(name = 'tSNE', display = 'cite')`). 
+We built an automated pipeline for processing and analyzing all data for the web app using the program Snakemake, a python-based workflow management system that allows for efficient parallel execution of the analysis, facilitates reproduction by others, and simplifies long term maintenance of the EiaD data (`r fig_cap(name='workflowDoodle', display = 'cite')`, `r supFig_cap(name='snakemakeDAG', display = 'cite')`)[@kosterSnakemakeScalableBioinformatics2012]. In order to create a high quality final dataset across the `r core_tight_2019 %>% nrow()` initial samples (`r supTab_cap(name = 'metadataTable', display = 'cite')`)  and 46,030,412,878 reads we developed a rigorous quality control procedure as part of our analysis, considering a sample’s read mapping rate and median count level as well as behavior relative to samples of the same sub-tissue type (see Methods).  To identify tube mislabelling or sample extraction issues, we used t-SNE to group samples by sub-tissue type to identify variability within samples of the same sub-tissue and ensure overall consistency in data processing (`r fig_cap(name = 'tSNE', display = 'cite')`). 
 
 After our quality control and processing workflow, we found that samples of the same tissue type and origin cluster well together (`r fig_cap(name = 'tSNE', display = 'cite')`). For example, in retina derived tissue, primary adult tissue clusters tightly and distinctly from other cell types, and retinal organoids and fetal retina tissue cluster together. Our ability to uniformly cluster data by known biological function independent of study origin demonstrates that our workflow can effectively account for technical variation between studies. 
 
@@ -169,14 +187,15 @@ center_samples <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
 
 # cluster stats
 cluster_stats <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid'))) %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   group_by(Cluster) %>%
   summarise(Cluster_Tissues = paste(unique(Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
 
 # set up for ggplot
-tsne_50_prep <- tsne_50 %>% 
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid'))) %>%
+tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
+  left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>% 
   left_join(., cluster_stats, by=c('Cluster')) %>%
@@ -203,15 +222,11 @@ tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx
 ```{r tableSampleCounts, echo = F, results='asis', warning = F, fig.cap = tableSampleCounts_cap}
 tableSampleCounts_cap <- tab_cap(name='tableSampleCounts', caption = 'EiaD contain a huge set of diverse eye tissues')
 table <- left_join(core_tight_2019  %>% 
-                     select(-run_accession) %>% 
-                     unique() %>% 
                      filter(study_accession != 'SRP012682',Tissue %in% c('RPE','Lens','Cornea', 'Retina')) %>% 
                      group_by(Tissue) %>% 
                      summarise(`Pre QC Count` = n()),
                    
-                   core_tight_2019  %>% 
-                     select(-run_accession) %>% 
-                     unique() %>% 
+                   core_tight_2019  %>%
                      filter(study_accession != 'SRP012682', Tissue %in% c('RPE','Lens','Cornea', 'Retina'), Kept == 'Kept') %>% 
                      rowwise() %>% 
                      mutate(Sub = str_split(Sub_Tissue, ' - ')[[1]][2]) %>% 
@@ -224,8 +239,6 @@ table <- left_join(core_tight_2019  %>%
   as_tibble() 
 
 gtex_tissues <- core_tight_2019 %>% 
-  select(-run_accession) %>% 
-  unique() %>%
   filter(study_accession == 'SRP012682', Kept == 'Kept') %>%
   group_by(Tissue, study_accession) %>% 
   summarise(Count = n()) %>% 
@@ -234,12 +247,8 @@ gtex_tissues <- core_tight_2019 %>%
   pull(Tissue)
 
 gtex <- cbind('GTEx', core_tight_2019 %>% 
-                select(-run_accession) %>% 
-                unique() %>%
                 filter(study_accession == 'SRP012682') %>% nrow(),
               core_tight_2019 %>% 
-                select(-run_accession) %>% 
-                unique() %>%
                 filter(study_accession == 'SRP012682', Kept == 'Kept') %>% nrow(),
               paste(gtex_tissues, collapse = ', ')) %>% as_tibble()
 
@@ -257,10 +266,10 @@ cat("</div>")
 ```
 
 ## eyeIntegration web app provides interactive visual portal to all data 
-The EiaD 2019 dataset is presented through the eyeIntegration web app (https://eyeIntegration.nei.nih.gov). The web app was designed to provide a simple interface that have the same general concept – select specific genes and tissue and view relevant information. The web-app is divided into four general categories: expression, two-dimension sample (or single cell) relationships, gene networks, and data tables. 
+The EiaD 2019 dataset is used directly by the eyeIntegration web app (https://eyeIntegration.nei.nih.gov). The web app was designed to provide a simple interface that have the same general concept – select specific genes and tissue and view relevant information. The web-app is divided into four general categories: expression, two-dimension sample (or single cell) relationships, gene networks, and data tables. 
 
 ## Custom gene and tissue expression boxplots
-The expression tab of the webpage provides a wealth of information about both gene and transcript expression in a range of eye and body tissues, giving the user the ability to compare the expression of different genes within a single tissue, as well as the expression of genes across multiple tissues  (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'A')`). The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then genes (or transcripts), then tissues. A boxplot is then generated afer hitting the "Re(Draw) Plot" with overlaid individual data points. A tabular report is generated based on selected genes and tissues: a table with links to Ensembl, GeneCard, and OMIM for each gene for quick referencing, and a table containing expression levels for each selected gene in each selected tissue. The tables can be arranged or sorted to the user’s preference, and can be easily downloaded for local use. 
+The expression tab of the webpage provides a wealth of information about both gene and transcript expression in a range of eye and body tissues, giving the user the ability to compare the expression of different genes within a single tissue, as well as the expression of genes across multiple tissues  (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'A')`). The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then genes (or transcripts), then tissues. A boxplot is then generated afer hitting the "Re(Draw) Plot" button with overlaid individual data points. On mouse-over, the metadata for the individual sample is displayed. A tabular report is generated based on selected genes and tissues: a table with links to Ensembl, GeneCard, and OMIM for each gene for quick referencing, and a table containing expression levels for each selected gene in each selected tissue. The tables can be arranged or sorted to the user’s preference, and can be easily downloaded for local use. 
 
 ```{r appScreenshots, echo = F, fig.cap = appScreenshots_cap, fig.width=12}
 appScreenshots_cap <- fig_cap(name='appScreenshots', caption = 'Various screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. B. Alternative heatmap visualization. C. CRX gene expression heatmap and table information from Macosko et al. P14 scRNA-seq. D. t-SNE visualization of individual cell gene expression profiles from Macosko et al. E. Data table export view. F. Differential gene expression across different tissues and with GO term enrichment. ')
@@ -271,7 +280,7 @@ knitr::include_graphics('figures_and_tables/Figure 2.png')
 Heatmaps based on expression can be drawn for selected genes and tissues, and are useful for comparing gene expression across many genes and tissues (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'B')`). Finally, a session can be saved or shared by building a custom link for the session with the "Build URL Shortcut" button. 
 
 ## Differential expression and gene ontology enrichment tests allow quick comparison of gene differences between groups
-Using our expression data, we performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in the GTEx data set, allowing users to quickly identify eye specific genes across `r limma_DE_tests %>% nrow()` different comparisons.  The user can view the results under the ‘Differential’ selection under the ‘expression’ tab (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'F')`).  As with expression, the user can select which version of the web app to draw data from as well as select for gene or transcript level comparisons. The user additionally has the option to select different gene classes to examine, protein coding, lincRNA etc. 
+Using our expression data, we performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in our subset of the GTEx dataset, allowing users to quickly identify eye specific genes across `r limma_DE_tests %>% nrow()` different comparisons.  The user can view the results under the ‘Differential’ selection under the ‘expression’ tab (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'F')`).  As with expression, the user can select which version of the web app to draw data from as well as select for gene or transcript level comparisons. The user additionally has the option to select different gene classes to examine, protein coding, lincRNA etc. 
 
 The results of differential expression are presented in a tabular format showing log2 fold change, average expression, and different statistical values. Depending on the comparison, there are `r q01_limma_gene_sig %>% pull(Count) %>% sort() %>% head(1)` to `r q01_limma_gene_sig %>% pull(Count) %>% sort() %>% tail(1)` differentially expressed genes (`r supTab_cap(name = 'limmaTests', display = 'cite')`). The table can be easily searched for any given gene, viewed and ordered to the user’s preference, and downloaded in CSV format. Differential expression can be visualized through fold change bar graphs in the ‘pan-tissue plots’ section under expression. Additionally, we performed GO enrichment for all differential comparisons. Enriched GO terms are presented first as a word cloud, for quick comparison of GO enrichment.  We provide tables, with similar viewing options as the differential expression table, for enriched GO terms in each class of a given differential comparison.
 
@@ -279,14 +288,14 @@ The results of differential expression are presented in a tabular format showing
 We provide scRNA-seq data from murine retina across two studies [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. This allows researchers to quickly examine gene expression across individual cell types in the retina. Single cell gene expression data is visualized through a heatmap showing the expression of a gene across multiple retinal cell types and different developmental time points (E11-P14, if available), and a table of expression values is generated containing the expression data used to draw the heatmap (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'C')`). We also provide t-SNE/UMAP based clustering using cell type specific labeling created by the publishing authors (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'D, see Methods')`). The plots show all cell types present a given developmental stage, and highlights cells expressing a gene above a user given level. 
 
 ## EiaD 2019 demonstrates that organoids, iPSC-derived, and fetal tissue retina have closely related transcriptomes
-There are, currently, three approaches to collecting human fetal retina: 1. post-mortem tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to generating developing retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
+There are, currently, three approaches to studying developing human retina: 1. post-mortem fteal tissue, 2. organoids, and 3. iPSC-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to studying developing retina compare at a transcriptomic level. Should organoid and iPSC-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
 
 To evaluate this question, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the four types of retina tissue (adult, fetal, iSPC, and organoid) (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). Here we see three distinct groupings: adult retina (2), developing retina (3), and iPSC/undifferentiated (1). We do see several organoid tissues in cluster 1, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the iPSC-based retina samples are older than 50 days. 
 
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
-tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
+tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, iPSC retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Sub-Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
 
-retina_plus_group <- tsne_50 %>% filter(X1 > 34, X1 < 51, X2 > -25, X2 < 21,sample_accession!='SRS1572426')
+retina_plus_group <- tsne_50 %>% filter(X1 > 30, X1 < 50, X2 > -17, X2 < 16)
 dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 2)
 
 retina_plus_group$Cluster <- dbscan_cluster$cluster
@@ -315,7 +324,7 @@ cluster_stats <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("samp
 
 # set up for ggplot
 retina_plus_group_prep <- retina_plus_group %>%
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>%
   left_join(., cluster_stats, by=c('Cluster')) %>%
@@ -357,7 +366,7 @@ tsne_50_prep %>%
   mutate(Origin = case_when(Age < 30 ~ 'Organoid < 30 days',
                             Age > 30 ~ 'Organoid > 30 days',
                             TRUE ~ Origin)) %>% 
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell Line', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days')),
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days')),
          Tissue = case_when(sample_accession == 'SRS1572426' ~ 'Retina',
                             TRUE ~ Tissue)) %>% 
   mutate(ZoomTissue = case_when((Tissue == 'Retina' & Sub_Tissue != 'Retina - Adult Tissue') | Tissue == 'ESC' ~ 'Early Retina',
@@ -374,7 +383,7 @@ tsne_50_prep %>%
   facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
   geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
   stat_chull(data=tsne_zoom %>% 
-               mutate(`Tissue Cluster` = Cluster_Tissues),aes(fill=`Tissue Cluster`), alpha = 0.3) +
+               mutate(`Sub-Tissue Cluster` = Cluster_Tissues),aes(fill=`Sub-Tissue Cluster`), alpha = 0.3) +
   scale_color_discrete_sequential(palette = 'viridis') + 
   scale_fill_viridis_d(option = 'plasma') +
   theme_bw() +
@@ -391,9 +400,9 @@ Individual data files for gene expression and sample metadata can be downloaded 
 
 # Discussion
 
-EiaD 2019 contains a large set of carefully curated, reproducibly processed human eye RNA-seq datasets alongside a crucial human body tissue comparison set from the GTEx project. It is available for local install as an R package at https://www.github.com/davemcg/eyeIntegration_app and is served via a powerful web app, eyeIntegration at https://eyeIntegration.nei.nih.gov. The web app offers a wide range of user-driven visualizations to compare expression of genes across dozens of human body and eye tissues. Furthermore, murine scRNA-seq datasets have been integrated, allowing for examination of retina cell type specific gene expression. Several human and non-human primate studies have been posted in the past year on the pre-print server bioRxiv and once the raw data becomes publicly available, we will be updating the section eyeIntegration[@lukowskiGenerationHumanNeural2018; @luSinglecellRNAseqAnalysis2018; @pengMolecularClassificationComparative2018]. 
+EiaD 2019 contains a large set of carefully curated, reproducibly processed human eye RNA-seq datasets alongside a crucial human body tissue comparison set from the GTEx project. It is available for local install as an R package at https://www.github.com/davemcg/eyeIntegration_app and is served via a powerful web app, eyeIntegration at https://eyeIntegration.nei.nih.gov. The web app offers a wide range of user-driven visualizations to compare expression of genes across dozens of human body and eye tissues. Furthermore, murine scRNA-seq datasets have been integrated, allowing for examination of retina cell type specific gene expression. Several human and non-human primate studies have been posted in the past year on the pre-print server bioRxiv and as the raw data becomes publicly available, we will be updating this section of eyeIntegration[@lukowskiGenerationHumanNeural2018; @luSinglecellRNAseqAnalysis2018; @pengMolecularClassificationComparative2018]. 
 
-As human fetal tissue is extremely difficult to obtain and not amenable for chemical or genetic modification, it is crucial for iPSC and organoid based developmental methods to be developed. Our merging of these datasets and analysis at a transcriptome level (as compared to evaluating with a few marker genes) demonstrates that these two approaches are successfully recapitulating fetal tissues to a first approximation at the whole transcriptome level. This result underscores the value of these approaches in building models for human retina developmental.
+As human fetal tissue is difficult to obtain and thus not very amenable for chemical or genetic modification, it is crucial for iPSC and organoid based developmental methods to be developed. Our merging of these datasets and analysis at a transcriptome level (as compared to evaluating with a few marker genes) demonstrates that these two approaches are successfully recapitulating fetal tissues to a first approximation at the whole transcriptome level. This result underscores the value of these approaches in building models for human retina developmental .
 
 Wrapping all of the data processing steps in a Snakemake pipeline has several important features: our code is publicly available for review, our analyses are reproducible, future sample updates can be streamlined in with minimal effort, and because all the processing is in modular pieces it is easier to add new analysis steps. In the future, we plan on regularly adding new samples to EiaD, offering *de novo* eye tissue transcriptomes, adding non-human eye samples, and epigenetic datasets. 
 
@@ -430,7 +439,7 @@ make_pca_tissue <- function(tissue = 'Brain'){
     geom_point(size=1, alpha=0.6, position='jitter', aes(shape=Origin)) +
     xlab('PCA 1') + ylab('PCA 2') +
     theme_bw() +
-    theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
+   # theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
     scale_color_manual(values = colors) + 
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 }
@@ -441,11 +450,7 @@ plot_grid(make_pca_tissue('Brain'), make_pca_tissue('Pituitary'),
           align = 'hv')
 ```
 
-```{r visitorMap, echo = F, results='asis', fig.pos = 'H', fig.cap = visitorMap_cap, fig.height=4, fig.width=10}
-visitorMap_cap <- supFig_cap(name='visitorMap', caption = paste('As of January 2019, eyeIntegration has had usage across', cities %>% unique() %>% length(), 'cities and', geo_locate$countries %>% unique() %>% length(), 'countries.'))
-
-world <- map_data("world")
-world <- world[world$region != "Antarctica",]
+```{r visitorMap, echo = F, results='asis', fig.pos = 'H', fig.cap = visitorMap_cap, fig.height=4, fig.width=10, warning=F}
 
 ggplot(data = geo_locate, aes(x = longitudes, y = latitudes, colour = countries)) + 
   geom_map(data=world, map=world,
@@ -461,10 +466,10 @@ ggplot(data = geo_locate, aes(x = longitudes, y = latitudes, colour = countries)
 metadata_cap <- supTab_cap(name='metadataTable', caption = 'Full metadata for 20 random eye samples. Full metadata available as supplementary file.')
 set.seed(1534)
 cat("<div id=\"tbl:metadataTable\">")
-flextable(core_tight_2019 %>% select(-run_accession) %>% unique() %>% filter(study_accession != 'SRP012682') %>% sample_n(20)) %>% 
+flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_n(20)) %>% 
   font(fontname = 'Linux Libertine O', part = 'all') %>% 
   fontsize(size = 6) %>% 
-   width(width = c(0.5,0.5,0.5,3,1,0.5,0.5,0.5,0.5))
+  width(width = c(0.5,0.5,0.5,3,1,0.5,0.5,0.5,0.5))
 #Output Caption (* * for italics)
 cat(paste0("\n*",metadata_cap,"*\n"))
 # Output </div>
@@ -500,6 +505,6 @@ cat("</div>")
 ```
 # Acknowledgements
 
-We would like the thank the dozens of groups who provided the raw data required to create this project. We are keeping a running list of the projects and citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions of the eyeIntegration app over the past two years. This work utilized the computational resources and of the NIH HPC Biowulf cluster (http://hpc.nih.gov). 
+We would like the thank the dozens of groups who provided the raw data required to create this project. We are keeping a running list of the projects and citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions of the eyeIntegration app over the past two years. This work utilized the computational resources of the NIH HPC Biowulf cluster (http://hpc.nih.gov). 
 
 # Bibliography
