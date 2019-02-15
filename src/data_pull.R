@@ -3,8 +3,10 @@ library(pool)
 library(RSQLite)
 library(tidyverse)
 
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/Arges/eyeIntegration_app/www/2019/EiaD_human_expression_2019_02.sqlite')
-gene_pool_2017 <- dbPool(drv = SQLite(), dbname = '/Volumes/data/eyeIntegration_EiaD/eyeIntegration_human_2017_01.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
+gene_pool_2017 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2017/eyeIntegration_human_2017_01.sqlite')
+
+
 core_tight_2017 <- gene_pool_2017 %>% tbl('metadata') %>% as_tibble()
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 load('data/human_tx_studies.Rdata')
