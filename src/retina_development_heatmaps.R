@@ -4,12 +4,20 @@ library(tidyverse)
 library(circlize)
 library(pool)
 library(RSQLite)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
-rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','SLX2')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '~/git/eyeIntegration_app/www/2019/EiaD_human_expression_2019_04.sqlite')
+rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2')
 pr <- c('OTX2','RCVRN','AIPL1','NRL','CRX','PDE6B','NR2E3','ROM1','GNGT2','GNAT1','PDE6H','CNGB1','OPN1SW','GUCA1A','GNAT2','CNGA1','RHO','OPN1MW')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
+cone_rod <- c('NEUROD1','CRX','RORB','GUCA1B','GUCA1A','GUCY2D','PRPH2','RP1','RBP3','TULP1','AIPL1','RCVRN','GUCY2F','SLC24A1')
+cone <- c('RXRB','THRB','RORA','GNAT2','ARR3','GNGT2','PDE6C','CNGA3','PDE6H','GNB3','GUCA1C','OPN1MW','OPN1SW','OPN1LW','GRK7')
+rod <- c('NR2E3','NRL','MEF2C','ESRRB','CNGB1','GNAT1','GNGT1','GRK1','PDE6G','PDE6A','CNGA1','RHO','SAG','GNB1','PDE6B')
 
-gene <- pr
+
+all_markers <- c(rgc, pr, progenitor, cone_rod, cone, rod) %>% unique()
+
+core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
+
+gene <- cone
 query = paste0('select * from lsTPM_gene where ID in ("',paste(gene, collapse='","'),'")')
 p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
   left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
@@ -61,6 +69,7 @@ y <- y[-1,]
 one <- Heatmap(log2(y), cluster_columns = F,   column_title = 'Retina Tissue',
                col = viridis(10),
                show_row_names = FALSE,
+               name = 'log2(TPM+1)',
                clustering_distance_rows = "pearson", 
                clustering_distance_columns = "euclidean")
 
@@ -70,7 +79,7 @@ colnames(y) <- y['Days',]
 colnames(y)[1] <- 'ESC'
 y <- y[-1,]
 
-two <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw 3D\nOrganoid\nGFP Neg',
+two <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw GFP+\n3D Retina',
                col = viridis(10),
                clustering_distance_rows = "pearson", 
                clustering_distance_columns = "euclidean", 
@@ -83,7 +92,7 @@ colnames(y) <- y['Days',]
 colnames(y)[1] <- 'ESC'
 y <- y[-1,]
 
-three <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw 3D\nOrganoid\nGFP Neg',
+three <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw GFP-\n3D Retina',
                  col = viridis(10),
                  clustering_distance_rows = "pearson", 
                  clustering_distance_columns = "euclidean", 
@@ -104,3 +113,146 @@ four <- Heatmap(log2(y), cluster_columns = F, column_title = 'Eldred 3D Organoid
 
 one + two + three + four
 
+################ 
+# all in one
+################
+tissue <- bind_rows(fetal_tissue %>% mutate(Type = 'Tissue'), 
+                    adult_tissue %>% mutate(Type = 'Tissue'),
+                    ESC %>% mutate(Type = 'ESC'),
+                    organoid_johnston %>% mutate(Type = 'Eldred'),
+                    organoid_swaroop_GFP %>% mutate(Type = 'Kaewkhaw GFP+'),
+                    organoid_swaroop_GFPneg %>% mutate(Type = 'Kaewkhaw GFP-'))
+x <- tissue
+y <- x %>% spread(ID, value) %>% select(-Days, -Type) %>% t()
+type <- (x %>% spread(ID, value) %>% t())[2,]
+days <- (x %>% spread(ID, value) %>% t())[1,]
+colnames(y) <- days
+
+ha_column = HeatmapAnnotation(df = data.frame(Type = type), 
+                              col = list(Type = c("ESC" = magma(10)[1],
+                                                  "Tissue" = magma(10)[3],
+                                                  "Eldred" = magma(10)[5],
+                                                  "Kaewkhaw GFP-" = magma(10)[7],
+                                                  "Kaewkhaw GFP+" = magma(10)[9])))
+
+Heatmap(log2(y), cluster_columns = T, 
+        col = viridis(10),
+        clustering_distance_rows = "pearson", 
+        clustering_distance_columns = "euclidean", 
+        top_annotation = ha_column,
+        show_heatmap_legend = F)
+
+
+# summarise by type -----
+sum_type <- function(gene_set, type){
+  query = paste0('select * from lsTPM_gene where ID in ("',paste(gene_set, collapse='","'),'")')
+  p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
+    left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
+    as_tibble()
+  tissue <- p %>% 
+    filter(Tissue == 'Retina' | Tissue == 'ESC') %>% 
+    filter(Sub_Tissue != 'Retina - RGC Stem Cell') %>% 
+    mutate(Age = case_when(Tissue == 'ESC' ~ 0,
+                           Age_Days == '.' ~ 1000,
+                           TRUE ~ as.numeric(Age_Days)),
+           Type = case_when(study_accession == 'SRP159246' ~ 'Eldred',
+                            grepl('GFP positive', sample_attribute) ~ 'Kaewkhaw GFP+',
+                            grepl('GFP negative', sample_attribute) ~ 'Kaewkhaw GFP-',
+                            Tissue == 'ESC' ~ 'ESC',
+                            TRUE ~ 'Tissue')) %>% 
+    group_by(ID, Age, Type) %>% 
+    summarise(value = mean(value)) 
+  
+  
+  x <- tissue# %>% filter(Type == type)
+  y <- x %>% spread(ID, value) %>% t()
+  age <- y['Age',]
+  type <- y['Type',]
+  z <-  x %>% spread(ID, value) %>% ungroup() %>% select(-Age, -Type) %>% t()
+  colnames(z) <- age
+  out <- list()
+  out$data <- colSums(z)
+  out$type <- type
+  out
+}
+
+z <- bind_rows(
+  sum_type(rgc),
+  sum_type(pr),
+  sum_type(progenitor),
+  sum_type(cone_rod),
+  sum_type(cone),
+  sum_type(rod)
+)
+row.names(z) <- c('RGC','PR','Progenitor','ConeRod','Cone','Rod')
+Heatmap(log2(z %>% as.matrix()) , cluster_columns = T, 
+        col = viridis(10),
+        clustering_distance_rows = "pearson", 
+        clustering_distance_columns = "euclidean", 
+        show_heatmap_legend = F)
+
+######################
+
+
+
+
+
+###################
+
+# build model to predict fetal tissue age
+# apply to organoid 
+# doesn't really work
+
+###################
+tissue <- bind_rows(ESC, fetal_tissue, adult_tissue)
+
+query = 'select * from lsTPM_gene'
+p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
+  left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
+  as_tibble()
+tissue_allGene <- p %>% 
+  filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% 
+  group_by(ID, Age_Days) %>% 
+  summarise(value = mean(value)) %>% 
+  mutate(Days = as.integer(Age_Days)) %>% 
+  select(-Age_Days)
+x <- tissue_allGene
+y <- x %>% spread(ID, value) %>% t()
+colnames(y) <- y['Days',]
+y <- y[-1,]
+# apply(y, 1, var) %>% enframe() %>% arrange(-value)
+# top100 <- apply(y, 1, var) %>% enframe() %>% arrange(-value) %>% head(100) %>% pull(name)
+
+data = y[all_genes,] %>% t() %>% data.frame()
+#data
+data$age <- row.names(data) %>% as.numeric()
+
+# caret
+library(caret)
+library(xgboost)
+set.seed(96)
+lm_fit <- train(age ~ .,
+                data = data, 
+                method = "lm")
+
+glmboost_fit <- train(age ~ .,
+                      data = data, 
+                      method = "glmboost")
+bst <- xgboost(data = data %>% select(-age) %>% as.matrix(), 
+               label = data$age, 
+               max.depth = 3, 
+               eta = 0.2, 
+               gamma = 5,
+               nrounds = 20,
+               nthread = 2)
+
+
+# predict on organoid
+tissue <- bind_rows(organoid_johnston)
+x <- tissue
+y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+colnames(y) <- y['Days',]
+y <- y[-1,]
+
+predict(glmboost_fit, y %>% t())
+predict(bst, y[colnames(data %>% select(-age)),] %>% t())
