@@ -17,7 +17,7 @@ all_markers <- c(rgc, pr, progenitor, cone_rod, cone, rod) %>% unique()
 
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 
-gene <- cone
+gene <- all_genes
 query = paste0('select * from lsTPM_gene where ID in ("',paste(gene, collapse='","'),'")')
 p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
   left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
@@ -113,19 +113,39 @@ four <- Heatmap(log2(y), cluster_columns = F, column_title = 'Eldred 3D Organoid
 
 one + two + three + four
 
-################ 
-# all in one
-################
+# all in one ------
 tissue <- bind_rows(fetal_tissue %>% mutate(Type = 'Tissue'), 
                     adult_tissue %>% mutate(Type = 'Tissue'),
                     ESC %>% mutate(Type = 'ESC'),
                     organoid_johnston %>% mutate(Type = 'Eldred'),
                     organoid_swaroop_GFP %>% mutate(Type = 'Kaewkhaw GFP+'),
                     organoid_swaroop_GFPneg %>% mutate(Type = 'Kaewkhaw GFP-'))
-x <- tissue
-y <- x %>% spread(ID, value) %>% select(-Days, -Type) %>% t()
-type <- (x %>% spread(ID, value) %>% t())[2,]
+x <- tissue %>% mutate(Range = case_when(Days == 0 ~ 0,
+                                         Days <= 10 ~ 10,
+                                         Days <= 20 ~ 20,
+                                         Days < 40 ~ 35,
+                                         #Days < 55 ~ 50,
+                                         Days < 65 ~ 55,
+                                         #Days < 75 ~ 70,
+                                         Days < 85 ~ 75,
+                                         #Days < 95 ~ 90,
+                                         Days < 105 ~ 100,
+                                         #Days < 115 ~ 110,
+                                         Days < 125 ~ 120,
+                                         #Days < 135 ~ 130,
+                                         Days < 145 ~ 140,
+                                         #Days < 165 ~ 160,
+                                         Days < 185 ~ 180,
+                                         #Days < 205 ~ 200,
+                                         #Days < 225 ~ 220,
+                                         Days < 255 ~ 250,
+                                         TRUE ~ 1000)) %>% 
+  group_by(ID, Range) %>% summarise(value = mean(value))
+y <- x %>% spread(ID, value) %>% select(-Range) %>% t()
+#type <- (x %>% spread(ID, value) %>% t())[2,]
 days <- (x %>% spread(ID, value) %>% t())[1,]
+days[0] <- 'ESC'
+days[length(days)] <- 'Adult'
 colnames(y) <- days
 
 ha_column = HeatmapAnnotation(df = data.frame(Type = type), 
@@ -135,11 +155,11 @@ ha_column = HeatmapAnnotation(df = data.frame(Type = type),
                                                   "Kaewkhaw GFP-" = magma(10)[7],
                                                   "Kaewkhaw GFP+" = magma(10)[9])))
 
-Heatmap(log2(y), cluster_columns = T, 
-        col = viridis(10),
-        clustering_distance_rows = "pearson", 
-        clustering_distance_columns = "euclidean", 
-        top_annotation = ha_column,
+Heatmap(log2(y+1), cluster_columns = F, 
+        col = colorRamp2(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), colors = viridis(16)),
+        clustering_distance_rows = "euclidean", 
+        #clustering_distance_columns = "euclidean", 
+        #top_annotation = ha_column,
         show_heatmap_legend = F)
 
 
@@ -289,12 +309,12 @@ rf_fit <- train(age ~ .,
                       method = "rf")
 bst <- xgboost(data = data %>% select(-age) %>% as.matrix(), 
                label = data$age)
-               , 
-               max.depth = 3, 
-               eta = 0.2, 
-               gamma = 5,
-               nrounds = 20,
-               nthread = 2)
+               # , 
+               # max.depth = 3, 
+               # eta = 0.2, 
+               # gamma = 5,
+               # nrounds = 20,
+               # nthread = 2)
 
 
 # predict on organoid
