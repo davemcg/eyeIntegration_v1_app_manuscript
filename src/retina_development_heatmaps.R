@@ -144,7 +144,7 @@ Heatmap(log2(y), cluster_columns = T,
 
 
 # summarise by type -----
-sum_type <- function(gene_set, type){
+sum_type <- function(gene_set){
   query = paste0('select * from lsTPM_gene where ID in ("',paste(gene_set, collapse='","'),'")')
   p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
     left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
@@ -176,21 +176,66 @@ sum_type <- function(gene_set, type){
   out
 }
 
-z <- bind_rows(
-  sum_type(rgc),
-  sum_type(pr),
-  sum_type(progenitor),
-  sum_type(cone_rod),
-  sum_type(cone),
-  sum_type(rod)
-)
+z <- rbind(
+  sum_type(rgc)$data,
+  sum_type(pr)$data,
+  sum_type(progenitor)$data,
+  sum_type(cone_rod)$data,
+  sum_type(cone)$data,
+  sum_type(rod)$data
+) %>% as.matrix()
+type <- sum_type(rgc)$type
 row.names(z) <- c('RGC','PR','Progenitor','ConeRod','Cone','Rod')
-Heatmap(log2(z %>% as.matrix()) , cluster_columns = T, 
+
+ha_column = HeatmapAnnotation(df = data.frame(Type = type), 
+                              col = list(Type = c("ESC" = magma(10)[1],
+                                                  "Tissue" = magma(10)[3],
+                                                  "Eldred" = magma(10)[5],
+                                                  "Kaewkhaw GFP-" = magma(10)[7],
+                                                  "Kaewkhaw GFP+" = magma(10)[9])))
+Heatmap(log2(z %>% as.matrix()) , 
+        cluster_columns = F, 
         col = viridis(10),
+        top_annotation = ha_column,
         clustering_distance_rows = "pearson", 
         clustering_distance_columns = "euclidean", 
         show_heatmap_legend = F)
 
+
+  # let's try merging ages into groups -----
+ages <- colnames(z)
+zz <- z %>% 
+  t() %>% 
+  as_tibble() 
+zz$Age <- as.numeric(ages)
+zz <- zz %>% mutate(Range = case_when(Age == 0 ~ 0,
+                                Age < 40 ~ 35,
+                                Age < 55 ~ 50,
+                                Age < 60 ~ 60,
+                                Age < 73 ~ 70,
+                                Age == 80 ~ 80,
+                                Age < 95 ~ 90,
+                                Age < 106 ~ 100,
+                                Age < 112 ~ 110,
+                                Age < 120 ~ 120,
+                                Age < 133 ~ 130,
+                                Age < 145 ~ 140,
+                                Age < 165 ~ 160,
+                                Age < 185 ~ 180,
+                                Age < 210 ~ 200,
+                                Age < 230 ~ 220,
+                                Age < 260 ~ 250,
+                                TRUE ~ 1000))
+zzz <- zz %>% group_by(Range) %>% summarise(RGC = mean(RGC), PR = mean(PR), Progenitor = mean(Progenitor), ConeRod = mean(ConeRod), Cone = mean(Cone), Rod = mean(Rod))
+row.names(zzz) <- zzz$Range
+
+Heatmap(log2(zzz %>% select(-Range) %>% as.matrix() %>% t()) , 
+        cluster_columns = T, 
+        col = viridis(10),
+        #top_annotation = ha_column,
+        clustering_distance_rows = "pearson", 
+        clustering_distance_columns = "euclidean", 
+        show_heatmap_legend = F)
 ######################
 
 
@@ -238,8 +283,13 @@ lm_fit <- train(age ~ .,
 glmboost_fit <- train(age ~ .,
                       data = data, 
                       method = "glmboost")
+
+rf_fit <- train(age ~ .,
+                      data = data, 
+                      method = "rf")
 bst <- xgboost(data = data %>% select(-age) %>% as.matrix(), 
-               label = data$age, 
+               label = data$age)
+               , 
                max.depth = 3, 
                eta = 0.2, 
                gamma = 5,
@@ -248,11 +298,19 @@ bst <- xgboost(data = data %>% select(-age) %>% as.matrix(),
 
 
 # predict on organoid
-tissue <- bind_rows(organoid_johnston)
+
+tissue <- p %>% 
+  filter(study_accession == 'SRP159246') %>% 
+  group_by(ID, Age_Days) %>% 
+  summarise(value = mean(value)) %>% 
+  mutate(Days = as.integer(Age_Days)) %>% 
+  select(-Age_Days)
 x <- tissue
-y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+y <- x %>% spread(ID, value) %>% t()
 colnames(y) <- y['Days',]
 y <- y[-1,]
 
+predict(lm_fit, y %>% t())
+predict(rf_fit, y %>% t())
 predict(glmboost_fit, y %>% t())
 predict(bst, y[colnames(data %>% select(-age)),] %>% t())
