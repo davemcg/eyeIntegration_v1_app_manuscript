@@ -8,7 +8,7 @@ gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '~/git/eyeIntegration_app/www/
 rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2')
 pr <- c('OTX2','RCVRN','AIPL1','NRL','CRX','PDE6B','NR2E3','ROM1','GNGT2','GNAT1','PDE6H','CNGB1','OPN1SW','GUCA1A','GNAT2','CNGA1','RHO','OPN1MW')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
-cone_rod <- c('NEUROD1','CRX','RORB','GUCA1B','GUCA1A','GUCY2D','PRPH2','RP1','RBP3','TULP1','AIPL1','RCVRN','GUCY2F','SLC24A1')
+# cone_rod <- c('NEUROD1','CRX','RORB','GUCA1B','GUCA1A','GUCY2D','PRPH2','RP1','RBP3','TULP1','AIPL1','RCVRN','GUCY2F','SLC24A1')
 cone <- c('RXRB','THRB','RORA','GNAT2','ARR3','GNGT2','PDE6C','CNGA3','PDE6H','GNB3','GUCA1C','OPN1MW','OPN1SW','OPN1LW','GRK7')
 rod <- c('NR2E3','NRL','MEF2C','ESRRB','CNGB1','GNAT1','GNGT1','GRK1','PDE6G','PDE6A','CNGA1','RHO','SAG','GNB1','PDE6B')
 
@@ -17,7 +17,7 @@ all_markers <- c(rgc, pr, progenitor, cone_rod, cone, rod) %>% unique()
 
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 
-gene <- all_genes
+gene <- all_markers
 query = paste0('select * from lsTPM_gene where ID in ("',paste(gene, collapse='","'),'")')
 p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
   left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
@@ -148,21 +148,34 @@ days[0] <- 'ESC'
 days[length(days)] <- 'Adult'
 colnames(y) <- days
 
-ha_column = HeatmapAnnotation(df = data.frame(Type = type), 
-                              col = list(Type = c("ESC" = magma(10)[1],
-                                                  "Tissue" = magma(10)[3],
-                                                  "Eldred" = magma(10)[5],
-                                                  "Kaewkhaw GFP-" = magma(10)[7],
-                                                  "Kaewkhaw GFP+" = magma(10)[9])))
+ha = HeatmapAnnotation(df = data.frame(Progenitor = (row.names(y) %in% progenitor) %>% as.character(),
+                                       Cone = (row.names(y) %in% cone) %>% as.character(),
+                                       Rod = (row.names(y) %in% rod) %>% as.character(),
+                                       PR = (row.names(y) %in% pr) %>% as.character(),
+                                       RGC = (row.names(y) %in% rgc) %>% as.character()), 
+                       col = list(Progenitor = c("TRUE" = 'black',
+                                                 "FALSE" = 'white'),
+                                  Cone = c("TRUE" = 'black',
+                                           "FALSE" = 'white'),
+                                  Rod = c("TRUE" = 'black',
+                                          "FALSE" = 'white'),
+                                  PR = c("TRUE" = 'black',
+                                         "FALSE" = 'white'),
+                                  RGC = c("TRUE" = 'black',
+                                          "FALSE" = 'white')),
+                       show_annotation_name = TRUE,
+                       show_legend = F,
+                       which = 'row')
 
-Heatmap(log2(y+1), cluster_columns = F, 
-        col = colorRamp2(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), colors = viridis(16)),
-        clustering_distance_rows = "euclidean", 
-        #clustering_distance_columns = "euclidean", 
-        #top_annotation = ha_column,
-        show_heatmap_legend = F)
+ht <- Heatmap(log2(y+1), cluster_columns = F, 
+              col = colorRamp2(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), colors = viridis(16)),
+              clustering_distance_rows = "euclidean", 
+              #clustering_distance_columns = "euclidean", 
+              #top_annotation = ha_column, 
+              
+              show_heatmap_legend = T)
 
-
+ht + ha
 # summarise by type -----
 sum_type <- function(gene_set){
   query = paste0('select * from lsTPM_gene where ID in ("',paste(gene_set, collapse='","'),'")')
@@ -222,30 +235,30 @@ Heatmap(log2(z %>% as.matrix()) ,
         show_heatmap_legend = F)
 
 
-  # let's try merging ages into groups -----
+# let's try merging ages into groups -----
 ages <- colnames(z)
 zz <- z %>% 
   t() %>% 
   as_tibble() 
 zz$Age <- as.numeric(ages)
 zz <- zz %>% mutate(Range = case_when(Age == 0 ~ 0,
-                                Age < 40 ~ 35,
-                                Age < 55 ~ 50,
-                                Age < 60 ~ 60,
-                                Age < 73 ~ 70,
-                                Age == 80 ~ 80,
-                                Age < 95 ~ 90,
-                                Age < 106 ~ 100,
-                                Age < 112 ~ 110,
-                                Age < 120 ~ 120,
-                                Age < 133 ~ 130,
-                                Age < 145 ~ 140,
-                                Age < 165 ~ 160,
-                                Age < 185 ~ 180,
-                                Age < 210 ~ 200,
-                                Age < 230 ~ 220,
-                                Age < 260 ~ 250,
-                                TRUE ~ 1000))
+                                      Age < 40 ~ 35,
+                                      Age < 55 ~ 50,
+                                      Age < 60 ~ 60,
+                                      Age < 73 ~ 70,
+                                      Age == 80 ~ 80,
+                                      Age < 95 ~ 90,
+                                      Age < 106 ~ 100,
+                                      Age < 112 ~ 110,
+                                      Age < 120 ~ 120,
+                                      Age < 133 ~ 130,
+                                      Age < 145 ~ 140,
+                                      Age < 165 ~ 160,
+                                      Age < 185 ~ 180,
+                                      Age < 210 ~ 200,
+                                      Age < 230 ~ 220,
+                                      Age < 260 ~ 250,
+                                      TRUE ~ 1000))
 zzz <- zz %>% group_by(Range) %>% summarise(RGC = mean(RGC), PR = mean(PR), Progenitor = mean(Progenitor), ConeRod = mean(ConeRod), Cone = mean(Cone), Rod = mean(Rod))
 row.names(zzz) <- zzz$Range
 
@@ -305,16 +318,16 @@ glmboost_fit <- train(age ~ .,
                       method = "glmboost")
 
 rf_fit <- train(age ~ .,
-                      data = data, 
-                      method = "rf")
+                data = data, 
+                method = "rf")
 bst <- xgboost(data = data %>% select(-age) %>% as.matrix(), 
                label = data$age)
-               # , 
-               # max.depth = 3, 
-               # eta = 0.2, 
-               # gamma = 5,
-               # nrounds = 20,
-               # nthread = 2)
+# , 
+# max.depth = 3, 
+# eta = 0.2, 
+# gamma = 5,
+# nrounds = 20,
+# nthread = 2)
 
 
 # predict on organoid

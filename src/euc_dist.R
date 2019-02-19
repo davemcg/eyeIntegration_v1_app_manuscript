@@ -8,7 +8,7 @@ gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '~/git/eyeIntegration_app/www/
 
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 
-gene <- all_genes
+#gene <- all_genes
 fetal_ret <- core_tight_2019 %>% filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% pull(sample_accession)
 query = paste0('select * from lsTPM_gene where sample_accession in ("',paste(fetal_ret, collapse='","'),'")')
 p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
@@ -27,3 +27,4 @@ x <- x[-1,]
 euc_dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
 e<-apply(x, 1, function(y) euc_dist(x['OTX2',],y))
 e %>% sort() %>% head()
+distances <- dist(x)
