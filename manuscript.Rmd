@@ -290,9 +290,9 @@ The results of differential expression are presented in a tabular format showing
 We provide scRNA-seq data from murine retina across two studies [@clarkComprehensiveAnalysisRetinal2018; @macoskoHighlyParallelGenomewide2015a]. This allows researchers to quickly examine gene expression across individual cell types in the retina. Single cell gene expression data is visualized through a heatmap showing the expression of a gene across multiple retinal cell types and different developmental time points (E11-P14, if available), and a table of expression values is generated containing the expression data used to draw the heatmap (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'C')`). We also provide t-SNE/UMAP based clustering using cell type specific labeling created by the publishing authors (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'D, see Methods')`). The plots show all cell types present a given developmental stage, and highlights cells expressing a gene above a user given level. 
 
 ## EiaD 2019 demonstrates that organoids, stem cell-derived, and fetal tissue retina have closely related transcriptomes
-There are, currently, three approaches to studying developing human retina: 1. post-mortem fteal tissue, 2. organoids, and 3. stem cell-derived cells. As an example of how the EiaD 2019 dataset can be used to address pan-study questions, we looked at whether at how well these three approaches to studying developing retina compare at a transcriptomic level. Should organoid and stem cell-derived cell line retina compare closely to fetal tissue, this would further re-inforce the value of these approaches in studying human retina development.
+There are, currently, two major approaches to studying developing human retina: post-mortem fetal tissue and stem-cell based organoids. We looked at whether at how well these approaches to studying developing retina compare at a transcriptomic level, both for tissue - organoid relationships and how well they correlate across early development. 
 
-To evaluate this question, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the four types of retina tissue (adult, fetal, iSPC, and organoid) (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). Here we see three distinct groupings: adult retina (2), developing retina (3), and stem cell/undifferentiated (1). We do see several organoid tissues in cluster 1, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the stem cell-based retina samples are older than 50 days. 
+To evaluate how the tissues and organoids compare at a transcriptome level, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the three types of retina tissue (adult, fetal, and organoid) (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). Here we see three distinct groupings: adult retina (2), developing fetal retina and stem cell organoid (3), and undifferentiated and early differentiating stem cells (1). We do see several organoid tissues in cluster 1, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the stem cell-based retina samples in cluster 2 are older than 50 days. 
 
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
 tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, stem cell retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Sub-Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
@@ -362,7 +362,7 @@ stat_chull <- function(mapping = NULL, data = NULL, geom = "polygon",
   )
 }
 
-tsne_50_prep %>% 
+zoom_plot <- tsne_50_prep %>% 
   rowwise() %>% 
   mutate(Age = suppressWarnings(as.integer(str_split(sample_attribute, '_')[[1]][2]))) %>% 
   mutate(Origin = as.character(Origin)) %>% 
@@ -397,6 +397,8 @@ tsne_50_prep %>%
         text = element_text(family = 'Linux Libertine O', size = 6))
 
 ```
+
+Furthermore we also
 
 ## Data accessibility 
 Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
