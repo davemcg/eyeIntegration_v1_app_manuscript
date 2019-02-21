@@ -21,6 +21,10 @@ all_markers <- c(rgc, pr, progenitor, cone, rod) %>% unique()
 # fetal retina
 fetal_ret <- core_tight_2019 %>% filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% pull(sample_accession)
 query = paste0('select * from lsTPM_gene where sample_accession in ("',paste(fetal_ret, collapse='","'),'")')
+p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
+  left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
+  as_tibble()
+
 x <- p %>%
   select(ID, sample_accession, value) %>% 
   unique() %>% 
@@ -53,3 +57,34 @@ for (i in all_markers){
 link <- cbind(all_markers, top[2:length(top)])
 colnames(link) <- c('Marker', 'TopRelated')
 save(link, file = 'data/markers_related_retina.Rdata')
+
+
+
+
+
+
+
+
+
+
+# ALL (for HPC)
+library(parallelDist)
+library(reshape)
+query = paste0('select * from lsTPM_gene')
+p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
+  left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
+  as_tibble()
+x <- p %>%
+  select(ID, sample_accession, value) %>% 
+  unique() %>% 
+  spread(ID, value) %>% 
+  select(-sample_accession) %>% 
+  t()
+sample_accession <- p %>%
+  select(ID, sample_accession, value) %>% 
+  unique() %>% 
+  spread(ID, value) %>% 
+  pull(sample_accession)
+colnames(x) <- sample_accession
+y <- parDist(x, method = 'euclidean', threads = 16) %>% as.matrix()
+euc_dist_all_by_all <- melt(y)
