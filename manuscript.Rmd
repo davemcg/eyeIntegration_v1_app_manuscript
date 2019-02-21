@@ -128,7 +128,7 @@ This manuscript's figures (excepting (Figure 2), tables, and most numbers, are a
 ## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sub-tissue types along with `r ((core_tight_2019 %>% filter(Kept == 'Kept') %>% pull(study_accession) %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new human eye RNA-seq studies, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples, and many sub-tissue types
 
 ```{r tissueCountsBarPlot, fig.height = 4, fig.cap=tissueCountsBarPlot_cap, echo=F}
-tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption = 'Substantial increase in eye tissue count and type from 2017 to 2019 EiaD. We also improved the metadata labelling for the cornea samples, now delineating endothelial and epithelial tissues.')
+tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption = 'Substantial increase in eye tissue count and type from 2017 to 2019 EiaD. We also improved the metadata labelling, the cornea samples now delineats endothelial and epithelial tissues and the retina samples distinguish retina organoid and retinal ganglion cell (RGC) from stem cells.')
 
 core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% filter(Kept == 'Kept'), core_tight_2017 %>% mutate(Version = '2017') %>% mutate(Sub_Tissue = gsub('_',' - ', Sub_Tissue))) %>% unique()
 
@@ -137,7 +137,7 @@ core_both %>% filter(grepl('Retina|Cornea|Lens|RPE', Tissue)) %>% unique() %>%
   group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
   mutate(Dataset = Version) %>% 
   ggplot(aes(x=Sub_Tissue, y=Count, fill=Tissue, alpha = Dataset)) + geom_bar(stat = 'identity', position = 'dodge') + theme_minimal() + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3)) + scale_colour_manual(values = c('grey','black')) + xlab('') + scale_alpha_manual(values = c(0.5,1)) +
-  theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
+  theme(text = element_text(size = 10)) +
   scale_fill_discrete_sequential(palette = 'viridis')  
 ```
 
@@ -215,7 +215,7 @@ tsne_50_prep %>% mutate(Group = case_when(study_accession == 'SRP012682' ~ 'GTEx
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   geom_label_repel(size = 7, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines")) + 
   theme_bw() +
-  theme(text = element_text(family = 'Linux Libertine O', size = 30)) +
+  theme(text = element_text(size = 30)) +
   scale_color_discrete_sequential(palette = 'viridis') + 
   guides(colour = guide_legend(override.aes = list(alpha = 1)))
 ```
@@ -292,10 +292,12 @@ We provide scRNA-seq data from murine retina across two studies [@clarkComprehen
 ## EiaD 2019 demonstrates that organoids, stem cell-derived, and fetal tissue retina have closely related transcriptomes
 There are, currently, two major approaches to studying developing human retina: post-mortem fetal tissue and stem-cell based organoids. We looked at whether at how well these approaches to studying developing retina compare at a transcriptomic level, both for tissue - organoid relationships and how well they correlate across early development. 
 
-To evaluate how the tissues and organoids compare at a transcriptome level, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the three types of retina tissue (adult, fetal, and organoid) (`r fig_cap(name = 'tsneFetalRetina', display = 'cite')`). Here we see three distinct groupings: adult retina (2), developing fetal retina and stem cell organoid (3), and undifferentiated and early differentiating stem cells (1). We do see several organoid tissues in cluster 1, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the stem cell-based retina samples in cluster 2 are older than 50 days. 
+To evaluate how the tissues and organoids compare at a transcriptome level, we look at the same t-SNE plot from `r fig_cap(name = 'tSNE', display = 'cite')` and focus in on the three types of retina tissue (adult, fetal, and organoid) (`r paste0(fig_cap(name = 'tsneFetalRetina', display = 'cite'),'A')`). Here we see three distinct groupings: adult retina (1), developing fetal retina and stem cell organoid (2), and undifferentiated and early differentiating stem cells (3). We do see several organoid samples in cluster 3, but these share one important difference from the rest of the organoid samples in cluster 3: they have been differentiating for less than 30 days (shape 'X'). All of the organoid retina samples in cluster 2 are older than 50 days. 
+
+To assess how similarly the fetal and organoid retina develop through time, we plot expression of retinal progenitors, photoreceptors, and retinan ganglion markers by time in days (`r paste0(fig_cap(name = 'tsneFetalRetina', display = 'cite'),'B')`). Each row is a gene marker of either progenitor, photoreceptor, or retinal ganglion cells. The rows are hierarchially clustered to put more similar expression patterns closer together, as denoted by the height of the dendrogram. We split the organoid tissues into three groups: Kaewkhaw et al. GFP+ and GFP- samples, and Eldred et al. samples [@eldredThyroidHormoneSignaling2018; @kaewkhawTranscriptomeDynamicsDeveloping2015]. The Kaewkhaw samples are flow sorted for a GFP marker under the control of a *CRX* promoter, an important of photoreceptor development. GFP+ cells thus are believed to be enriched in photoreceptor populations. We see that the progenitor, photoreceptor, and retinal ganglion groups are largely clustered together, with patterns of expression consistent across the retinal and organoid groups. 
 
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
-tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, stem cell retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Sub-Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
+tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, stem cell retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset (A) shows the retina samples. The "Sub-Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation. Major markers of retina progenitor, photoreceptors (cone and rod), and retinal ganglia cells (RGC) have simliar gene expression patterns across development in retina fetal tissue and organoids.')
 
 knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 ```

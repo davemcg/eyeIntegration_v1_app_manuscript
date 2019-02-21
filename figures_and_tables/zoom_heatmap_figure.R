@@ -3,6 +3,18 @@ library(tidyverse)
 library(ggforce)
 library(dbscan)
 library(cowplot)
+library(ggrepel)
+library(colorspace)
+
+# set up for ggplot
+tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
+  left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
+  mutate(Cluster = as.factor(Cluster)) %>%
+  select(-Cluster_Tissues) %>% 
+  left_join(., cluster_stats, by=c('Cluster')) %>%
+  mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
+  mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
 
 retina_plus_group <- tsne_50 %>% filter(X1 > 17, X1 < 50, X2 < -15, X2 > -50)
 retina_plus_group <- bind_rows(retina_plus_group, tsne_50 %>% filter(X1 > 35))
@@ -90,7 +102,7 @@ zoom_plot <- tsne_50_prep %>%
   #geom_point(size=8, alpha=0.2, aes(colour=Group)) +
   geom_point(size=2, alpha=1, aes(shape=Origin, colour = Group)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
-  facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = T, zoom.data=zoom) + 
+  facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
   geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
   stat_chull(data=tsne_zoom %>% 
                mutate(`Sub-Tissue Cluster` = Cluster_Tissues),aes(fill=`Sub-Tissue Cluster`), alpha = 0.3) +
@@ -101,10 +113,14 @@ zoom_plot <- tsne_50_prep %>%
          shape = guide_legend(ncol =2 )) +
   theme(axis.text.x = element_text(size = 6),
         axis.text.y = element_text(size = 6),
-        text = element_text(family = 'Linux Libertine O', size = 6))
-
-heatmap <- cowplot::ggdraw() + cowplot::draw_image('figures_and_tables/heatmap_retina_time_series.svg')
-svg("figures_and_tables/zoom_heatmap_retina.svg", width = 12, height = 12)
-cowplot::plot_grid(zoom_plot, NULL, heatmap, ncol = 3, rel_widths = c(9,-2.3, 3), scale=c(0.5,0,1), margin)
+        text = element_text(size = 6),
+        aspect.ratio = 0.5)
+svg('figures_and_tables/zoom_plot.svg', width = 4, height = 4)
+zoom_plot
+dev.off()
+zoom_svg <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/zoom_plot.svg', width = 1200, height =1200))
+heatmap <- ggdraw() + draw_image('figures_and_tables/heatmap_retina_time_series.svg')
+svg("figures_and_tables/zoom_heatmap_retina.svg", width = 14, height = 14)
+cowplot::plot_grid(zoom_svg, NULL, heatmap, rel_widths = c(1,-0.35,1.2), ncol=3, scale = c(0.7,1))
 dev.off()
 

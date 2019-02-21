@@ -4,7 +4,7 @@ library(tidyverse)
 library(circlize)
 library(pool)
 library(RSQLite)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/Arges/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
 
 rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
@@ -68,11 +68,20 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
   colnames(y) <- y['Days',]
   colnames(y)[ncol(y)] <- 'Adult'
   y <- y[-1,]
-  
-  one <- Heatmap(log2(y+1), cluster_columns = F,   column_title = 'Retina Tissue',
+  # ht_global_opt(heatmap_legend_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               annotation_legend_labels_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_row_names_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_column_names_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_row_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_column_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_legend_labels_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
+  #               heatmap_legend_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'))
+                
+  one <- Heatmap(log2(y+1), cluster_columns = F,   
+                 column_title =  'Retina Tissue', 
                  col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                  show_row_names = FALSE,
-                 name = 'log2(TPM+1)',
+                 name ='log2(TPM+1)',
                  clustering_distance_rows = "pearson", 
                  clustering_distance_columns = "euclidean")
   
@@ -86,6 +95,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
                  col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                  clustering_distance_rows = "pearson", 
                  clustering_distance_columns = "euclidean", 
+                 name ='log2(TPM+1)',
                  show_row_names = FALSE,
                  show_heatmap_legend = F)
   
@@ -99,6 +109,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
                    col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                    clustering_distance_rows = "pearson", 
                    clustering_distance_columns = "euclidean", 
+                   name ='log2(TPM+1)',
                    show_row_names = FALSE,
                    show_heatmap_legend = F)
   
@@ -112,6 +123,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
                   col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                   clustering_distance_rows = "pearson", 
                   clustering_distance_columns = "euclidean", 
+                  name ='log2(TPM+1)',
                   show_heatmap_legend = F)
   
   ha = HeatmapAnnotation(df = data.frame(Progenitor = (row.names(y) %in% progenitor) %>% as.character(),
@@ -231,12 +243,12 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
       enframe() %>% 
       left_join(link %>% data.frame(), by = c('value' = 'TopRelated'))  %>% 
       group_by(value) %>% summarise(Marker = paste(Marker, collapse = ', ')) %>% 
-        mutate(newID = paste0(value, ' - ', Marker)) %>% pull(newID)
+      mutate(newID = paste0(value, ' - ', Marker)) %>% pull(newID)
   }
   ht <- Heatmap(log2(y+1), cluster_columns = F, 
                 col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                 clustering_distance_rows = "euclidean", 
-                name = 'log(TPM + 1)',
+                name = gpar('log(TPM + 1)', fontfamily = 'Linux Libertine O'),
                 #clustering_distance_columns = "euclidean", 
                 #top_annotation = ha_column, 
                 
@@ -250,8 +262,8 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
 
 # all makers 
 marker_split_plot <- plotter_split(all_markers, annotation = T)
-draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
-pdf("figures_and_tables/heatmap_retina_time_series.pdf", width = 12, height = 8)
+#draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
+svg("figures_and_tables/heatmap_retina_time_series.svg", width = 11, height = 11)
 draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
 dev.off()
 
