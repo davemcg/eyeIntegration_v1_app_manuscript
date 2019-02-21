@@ -297,7 +297,7 @@ To evaluate this question, we look at the same t-SNE plot from `r fig_cap(name =
 ```{r tsneFetalRetina, fig.height = 4, fig.cap=tsneFetalRetina_cap, echo=F, warning = F}
 tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retina, stem cell retina, and fetal retina tissue have highly similar transcriptomes. The zoom inset shows the retina samples. The "Sub-Tissue Cluster" shading shows the cluster membership of the three major groups. The shapes of the points show the different origin types - notable types include the square for adult, the \'X\' for organoid under 30 days of differentiation, and the diamond for organoid over 30 days of differentiation.')
 
-retina_plus_group <- tsne_50 %>% filter(X1 > 20, X1 < 50, X2 < -15, X2 > -50)
+retina_plus_group <- tsne_50 %>% filter(X1 > 17, X1 < 50, X2 < -15, X2 > -50)
 retina_plus_group <- bind_rows(retina_plus_group, tsne_50 %>% filter(X1 > 35))
 dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 2)
 
