@@ -88,3 +88,4 @@ sample_accession <- p %>%
 colnames(x) <- sample_accession
 y <- parDist(x, method = 'euclidean', threads = 16) %>% as.matrix()
 euc_dist_all_by_all <- melt(y)
+euc_dist_all_by_all_top100 <- euc_dist_all_by_all %>% group_by(Var2) %>% arrange(value) %>% top_n(-100)
