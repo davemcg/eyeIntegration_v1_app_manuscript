@@ -251,6 +251,11 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
 # all makers 
 marker_split_plot <- plotter_split(all_markers, annotation = T)
 draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
+pdf("figures_and_tables/heatmap_retina_time_series.pdf", width = 12, height = 8)
+draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
+dev.off()
+
+
 marker_merge_plot <- plotter_merge(all_markers, annotation = T)
 draw(marker_split_plot +marker_merge_plot, padding = unit(c(15,15,15,15),"mm"))
 
