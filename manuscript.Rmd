@@ -302,7 +302,8 @@ tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retin
 knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 ```
 
-Furthermore we also
+# Differences between organoid and fetal retina suggest underdevelopment of retinal ganglion cell populations and HOXB
+
 
 ## Data accessibility 
 Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). Code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
