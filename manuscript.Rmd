@@ -302,7 +302,9 @@ tsneFetalRetina_cap <- fig_cap(name='tsneFetalRetina', caption = 'Organoid retin
 knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 ```
 
-# Differences between organoid and fetal retina suggest underdevelopment of retinal ganglion cell populations and HOXB
+# Organoid retina differential gene expression versus fetal tissue identifies sets of genes relating to patterning (HOXB family), cell adhesion (protocadherin family), and retinal ganglion function (BRN3/POU4F, NEFL, GAP43, SNCG)
+
+While organoid and retina tissues are highly similar at a pan-transcriptome level, differential expression analysis between organoid and fetal retina reveals differences in related groups of genes.
 
 
 ## Data accessibility 
