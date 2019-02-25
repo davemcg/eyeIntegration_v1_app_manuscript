@@ -14,6 +14,7 @@ rod <- c('NR2E3','NRL','MEF2C','ESRRB','CNGB1','GNAT1','GNGT1','GRK1','PDE6G','P
 pr <- c('OTX2','RCVRN','AIPL1','NRL','CRX','PDE6B','NR2E3','ROM1','GNGT2','GNAT1','PDE6H','CNGB1','OPN1SW','GUCA1A','GNAT2','CNGA1','RHO','OPN1MW', cone, rod) %>% unique()
 all_markers <- c(rgc, pr, progenitor, cone, rod) %>% unique()
 
+
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 
 gene <- aman
@@ -68,15 +69,8 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
   colnames(y) <- y['Days',]
   colnames(y)[ncol(y)] <- 'Adult'
   y <- y[-1,]
-  # ht_global_opt(heatmap_legend_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               annotation_legend_labels_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_row_names_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_column_names_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_row_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_column_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_legend_labels_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'), 
-  #               heatmap_legend_title_gp = gpar(fontsize = 16, fontfamily = 'Times New Roman'))
-                
+
+  
   one <- Heatmap(log2(y+1), cluster_columns = F,   
                  column_title =  'Retina Tissue', 
                  col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
@@ -284,83 +278,18 @@ related_split_plot + related_merge_plot
 plotter_split(gene_pool_2019 %>% tbl('limma_DE_gene') %>% filter(Comparison == 'Retina_3D.Organoid.Stem.Cell-Retina_Fetal.Tissue') %>% left_join(gene_pool_2019 %>% tbl('gene_IDs')) %>% filter(gene_type == 'protein_coding') %>% head(20) %>% pull(ID))
 
 
+# GO Terms
+cadherin <- (gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% filter(!grepl('HIST1', geneID)) %>% head(1) %>% pull(geneID) %>% str_split(.,"<br>"))[[1]]
+histones <- (gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% filter(grepl('HIST1', geneID)) %>% head(1) %>% pull(geneID) %>% str_split(.,"<br>"))[[1]]
+
+plotter_split(cadherin)
+plotter_split(histones)
+plotter_split(gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('HOXB', ID)) %>% filter(gene_type == 'protein_coding') %>% pull(ID))
+
+
+plotter_split(c(gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('POU4F', ID)) %>% filter(gene_type == 'protein_coding') %>% pull(ID), 'NEFL','GAP43','SNCG'))
 
 
 
 
 
-
-
-
-###################
-
-# build model to predict fetal tissue age
-# apply to organoid 
-# doesn't really work
-
-###################
-tissue <- bind_rows(ESC, fetal_tissue, adult_tissue)
-
-query = 'select * from lsTPM_gene'
-p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
-  left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
-  as_tibble()
-tissue_allGene <- p %>% 
-  filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% 
-  group_by(ID, Age_Days) %>% 
-  summarise(value = mean(value)) %>% 
-  mutate(Days = as.integer(Age_Days)) %>% 
-  select(-Age_Days)
-x <- tissue_allGene
-y <- x %>% spread(ID, value) %>% t()
-colnames(y) <- y['Days',]
-y <- y[-1,]
-# apply(y, 1, var) %>% enframe() %>% arrange(-value)
-# top100 <- apply(y, 1, var) %>% enframe() %>% arrange(-value) %>% head(100) %>% pull(name)
-
-data = y[all_genes,] %>% t() %>% data.frame()
-#data
-data$age <- row.names(data) %>% as.numeric()
-
-# caret
-library(caret)
-library(xgboost)
-set.seed(96)
-lm_fit <- train(age ~ .,
-                data = data, 
-                method = "lm")
-
-glmboost_fit <- train(age ~ .,
-                      data = data, 
-                      method = "glmboost")
-
-rf_fit <- train(age ~ .,
-                data = data, 
-                method = "rf")
-bst <- xgboost(data = data %>% select(-age) %>% as.matrix(), 
-               label = data$age)
-# , 
-# max.depth = 3, 
-# eta = 0.2, 
-# gamma = 5,
-# nrounds = 20,
-# nthread = 2)
-
-
-# predict on organoid
-
-tissue <- p %>% 
-  filter(study_accession == 'SRP159246') %>% 
-  group_by(ID, Age_Days) %>% 
-  summarise(value = mean(value)) %>% 
-  mutate(Days = as.integer(Age_Days)) %>% 
-  select(-Age_Days)
-x <- tissue
-y <- x %>% spread(ID, value) %>% t()
-colnames(y) <- y['Days',]
-y <- y[-1,]
-
-predict(lm_fit, y %>% t())
-predict(rf_fit, y %>% t())
-predict(glmboost_fit, y %>% t())
-predict(bst, y[colnames(data %>% select(-age)),] %>% t())
