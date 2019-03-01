@@ -275,15 +275,14 @@ related_split_plot + related_merge_plot
 
 
 # diff gene set -----
-plotter_split(gene_pool_2019 %>% tbl('limma_DE_gene') %>% filter(Comparison == 'Retina_3D.Organoid.Stem.Cell-Retina_Fetal.Tissue') %>% left_join(gene_pool_2019 %>% tbl('gene_IDs')) %>% filter(gene_type == 'protein_coding') %>% head(20) %>% pull(ID))
+plotter_split(gene_pool_2019 %>% tbl('limma_DE_gene') %>% filter(Comparison == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell') %>% left_join(gene_pool_2019 %>% tbl('gene_IDs')) %>% filter(gene_type == 'protein_coding') %>% head(20) %>% pull(ID))
 
 
 # GO Terms
 cadherin <- (gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% filter(!grepl('HIST1', geneID)) %>% head(1) %>% pull(geneID) %>% str_split(.,"<br>"))[[1]]
-histones <- (gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% filter(grepl('HIST1', geneID)) %>% head(1) %>% pull(geneID) %>% str_split(.,"<br>"))[[1]]
+
 
 plotter_split(cadherin)
-plotter_split(histones)
 plotter_split(gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('HOXB', ID)) %>% filter(gene_type == 'protein_coding') %>% pull(ID))
 
 

@@ -312,7 +312,10 @@ knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 
 ## Organoid retina differential gene expression versus fetal tissue identifies sets of genes relating to patterning (HOXB family), cell adhesion (protocadherin family), and retinal ganglion function (BRN3/POU4F, NEFL, GAP43, SNCG)
 
-While organoid and retina tissues are highly similar at a pan-transcriptome level, differential expression analysis between organoid and fetal retina reveals differences in related groups of genes. We  Analysis of broad trends in GO term enrichment between differentially expressed genes shows that the HOXB family and protocadherins are differentially expressed between fetal retina and organoids. We noticed that several BRN3/POU4F genes were also differentially regulated
+To identify specific changes between organoid and retina tissue, we did differential gene expression and GO term enrichment analyses. GO term enrichment identified cell adhesion (protocadherins) and patterning (HOXB family) as enriched gene sets. We also noticed that several RGC markers appeared to have lower expression in the organoids compared to the fetal tissue `r paste0(fig_cap(name = 'tsneFetalRetina', display = 'cite'),'B')`.  
+
+We plotted these sets of genes 
+Analysis of broad trends in GO term enrichment between differentially expressed genes shows that the HOXB family and protocadherins are differentially expressed between fetal retina and organoids. We noticed that several BRN3/POU4F genes were also differentially regulated
 
 ## Data accessibility 
 Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). The code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
