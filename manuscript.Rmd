@@ -62,13 +62,13 @@ load('data/visitor_stats.Rdata')
 # write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
 
 core_tight_2019 <- core_tight_2019 %>% mutate(Origin = case_when( grepl('Transformed', Sub_Tissue, ignore.case = T) ~ 'Cell Line',
-                                               grepl('Fetal', Sub_Tissue) ~ 'Fetal Tissue',
-                                               grepl('Stem', Sub_Tissue) ~ 'Stem Cell',
-                                               grepl('Organoid', Sub_Tissue) ~ 'Organoid',
-                                               grepl('Cell Line', Sub_Tissue) ~ 'Cell Line',
-                                               TRUE ~ 'Adult Tissue')) %>% 
+                                                                  grepl('Fetal', Sub_Tissue) ~ 'Fetal Tissue',
+                                                                  grepl('Stem', Sub_Tissue) ~ 'Stem Cell',
+                                                                  grepl('Organoid', Sub_Tissue) ~ 'Organoid',
+                                                                  grepl('Cell Line', Sub_Tissue) ~ 'Cell Line',
+                                                                  TRUE ~ 'Adult Tissue')) %>% 
   select(-run_accession) %>% 
-                     unique() 
+  unique() 
 
 # set up maps
 visitorMap_cap <- supFig_cap(name='visitorMap', caption = paste('As of January 2019, eyeIntegration has had usage across', cities %>% unique() %>% length(), 'cities and', geo_locate$countries %>% unique() %>% length(), 'countries.'))
@@ -196,7 +196,8 @@ center_samples <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
 
 # cluster stats
 cluster_stats <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
+  mutate(Origin = gsub('Organoid','Stem Cell', Origin)) %>% 
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   group_by(Cluster) %>%
   summarise(Cluster_Tissues = paste(unique(Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
@@ -204,7 +205,7 @@ cluster_stats <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
 # set up for ggplot
 tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
   left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>% 
   left_join(., cluster_stats, by=c('Cluster')) %>%
@@ -311,7 +312,7 @@ knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 
 ## Organoid retina differential gene expression versus fetal tissue identifies sets of genes relating to patterning (HOXB family), cell adhesion (protocadherin family), and retinal ganglion function (BRN3/POU4F, NEFL, GAP43, SNCG)
 
-While organoid and retina tissues are highly similar at a pan-transcriptome level, differential expression analysis between organoid and fetal retina reveals differences in related groups of genes. Analysis of broad trends in GO term enrichment between differentially expressed genes shows that the HOXB family and protocadherins are differentially expressed between fetal retina and organoids. We noticed that several BRN3/POU4F genes were also differentially regulated
+While organoid and retina tissues are highly similar at a pan-transcriptome level, differential expression analysis between organoid and fetal retina reveals differences in related groups of genes. We  Analysis of broad trends in GO term enrichment between differentially expressed genes shows that the HOXB family and protocadherins are differentially expressed between fetal retina and organoids. We noticed that several BRN3/POU4F genes were also differentially regulated
 
 ## Data accessibility 
 Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). The code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
@@ -369,7 +370,7 @@ make_pca_tissue <- function(tissue = 'Brain'){
     geom_point(size=1, alpha=0.6, position='jitter', aes(shape=Origin)) +
     xlab('PCA 1') + ylab('PCA 2') +
     theme_bw() +
-   # theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
+    # theme(text = element_text(family = 'Linux Libertine O', size = 10)) +
     scale_color_manual(values = colors) + 
     guides(colour = guide_legend(override.aes = list(alpha = 1)))
 }
@@ -444,7 +445,7 @@ cat("</div>")
 GOterm_cap <- supTab_cap(name='GOterm_fetal_retina_organoid', caption = 'Top GO terms enriched between fetal retina and organoid retina, after paring of redundant terms with REVIGO')
 # Output <div>
 cat("<div id=\"tbl:GOterm_fetal_retina_organoid\">")
-gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% mutate(qvalue = as.numeric(qvalue)) %>% arrange(qvalue) %>% filter(ID %in% c('GO:0001503','GO:0031589','GO:0050878','GO:0061448','GO:0050678','GO:0030335','GO:0030198', 'GO:0007156', 'GO:0050769', 'GO:0030099')) %>% mutate(geneID = gsub('<br>', ' ', geneID)) %>% as_tibble() %>% regulartable() %>% 
+organoid_fetal_GO %>% filter(ID %in% c('GO:0001503','GO:0031589','GO:0050878','GO:0061448','GO:0050678','GO:0030335','GO:0030198', 'GO:0007156', 'GO:0050769', 'GO:0030099')) %>% mutate(geneID = gsub('<br>', ' ', geneID)) %>% as_tibble() %>% regulartable() %>% 
   flextable::align(align='center') %>% 
   font(fontname = 'Linux Libertine O', part = 'all')
 #Output Caption (* * for italics)

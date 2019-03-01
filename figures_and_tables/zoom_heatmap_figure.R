@@ -9,6 +9,8 @@ library(colorspace)
 # set up for ggplot
 tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
   left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 
+  mutate(Origin = case_when(Sub_Tissue == 'Retina - 3D Organoid Stem Cell' ~ 'Organoid',
+         TRUE ~ Origin)) %>% 
   mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>% 
@@ -46,7 +48,7 @@ cluster_stats <- retina_plus_group %>% left_join(.,core_tight_2019, by = c("samp
 
 # set up for ggplot
 retina_plus_group_prep <- retina_plus_group %>%
-  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days'))) %>%
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>%
   left_join(., cluster_stats, by=c('Cluster')) %>%
@@ -83,7 +85,7 @@ stat_chull <- function(mapping = NULL, data = NULL, geom = "polygon",
 
 zoom_plot <- tsne_50_prep %>% 
   rowwise() %>% 
-  mutate(Age = suppressWarnings(as.integer(str_split(sample_attribute, '_')[[1]][2]))) %>% 
+  mutate(Age = as.numeric(Age_Days)) %>% 
   mutate(Origin = as.character(Origin)) %>% 
   mutate(Origin = case_when(Age < 30 ~ 'Organoid < 30 days',
                             Age > 30 ~ 'Organoid > 30 days',
@@ -118,7 +120,7 @@ zoom_plot <- tsne_50_prep %>%
 svg('figures_and_tables/zoom_plot.svg', width = 4, height = 4)
 zoom_plot
 dev.off()
-zoom_svg <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/zoom_plot.svg', width = 1200, height =1200))
+zoom_svg <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/zoom_plot.svg', width = 1800, height =1800))
 heatmap <- ggdraw() + draw_image('figures_and_tables/heatmap_retina_time_series.svg')
 svg("figures_and_tables/zoom_heatmap_retina.svg", width = 14, height = 14)
 cowplot::plot_grid(zoom_svg, NULL, heatmap, rel_widths = c(1,-0.35,1.2), ncol=3, scale = c(0.7,1))

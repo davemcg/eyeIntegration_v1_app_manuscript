@@ -6,7 +6,7 @@ library(pool)
 library(RSQLite)
 gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/Arges/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
 
-rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2')
+rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2', 'POU4F2', 'POU4F3', 'NEFL', 'GAP43', 'SNCG')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
 # cone_rod <- c('NEUROD1','CRX','RORB','GUCA1B','GUCA1A','GUCY2D','PRPH2','RP1','RBP3','TULP1','AIPL1','RCVRN','GUCY2F','SLC24A1')
 cone <- c('RXRB','THRB','RORA','GNAT2','ARR3','GNGT2','PDE6C','CNGA3','PDE6H','GNB3','GUCA1C','OPN1MW','OPN1SW','OPN1LW','GRK7')
@@ -43,13 +43,13 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
     filter(Sub_Tissue == 'Retina - 3D Organoid Stem Cell', grepl('GFP negative', sample_attribute), study_accession != 'SRP159246') %>% 
     group_by(ID, Age_Days) %>% 
     summarise(value = mean(value)) %>% 
-    mutate(Days = as.integer(Age_Days), Type = 'Kaewkhaw GFP- 3D Retina')%>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP- 3D Retina (Kaewkhaw)')%>% 
     select(-Age_Days)
   organoid_johnston <-  p %>% 
     filter(study_accession == 'SRP159246') %>% 
     group_by(ID, Age_Days) %>% 
     summarise(value = mean(value)) %>% 
-    mutate(Days = as.integer(Age_Days), Type = 'Kaewkhaw GFP+ 3D Retina') %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP+ 3D Retina (Kaewkhaw)') %>% 
     select(-Age_Days)
   fetal_tissue <- p %>% 
     filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% 
@@ -85,7 +85,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
   colnames(y)[1] <- 'ESC'
   y <- y[-1,]
   
-  two <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw\nGFP+ 3D\nRetina',
+  two <- Heatmap(log2(y), cluster_columns = F, column_title = 'GFP+ 3D\nRetina\n(Kaewkhaw)',
                  col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                  clustering_distance_rows = "pearson", 
                  clustering_distance_columns = "euclidean", 
@@ -99,7 +99,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
   colnames(y)[1] <- 'ESC'
   y <- y[-1,]
   
-  three <- Heatmap(log2(y), cluster_columns = F, column_title = 'Kaewkhaw\nGFP- 3D\nRetina',
+  three <- Heatmap(log2(y), cluster_columns = F, column_title = 'GFP- 3D\nRetina\n(Kaewkhaw)',
                    col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                    clustering_distance_rows = "pearson", 
                    clustering_distance_columns = "euclidean", 
@@ -113,7 +113,7 @@ plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
   colnames(y)[1] <- 'ESC'
   y <- y[-1,]
   
-  four <- Heatmap(log2(y), cluster_columns = F, column_title = 'Eldred 3D Retina', 
+  four <- Heatmap(log2(y), cluster_columns = F, column_title = '3D Retina (Eldred)', 
                   col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                   clustering_distance_rows = "pearson", 
                   clustering_distance_columns = "euclidean", 
@@ -164,13 +164,13 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
     filter(Sub_Tissue == 'Retina - 3D Organoid Stem Cell', grepl('GFP negative', sample_attribute), study_accession != 'SRP159246') %>% 
     group_by(ID, Age_Days) %>% 
     summarise(value = mean(value)) %>% 
-    mutate(Days = as.integer(Age_Days), Type = 'Kaewkhaw GFP- 3D Retina')%>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP- 3D Retina (Kaewkhaw)')%>% 
     select(-Age_Days)
   organoid_johnston <-  p %>% 
     filter(study_accession == 'SRP159246') %>% 
     group_by(ID, Age_Days) %>% 
     summarise(value = mean(value)) %>% 
-    mutate(Days = as.integer(Age_Days), Type = 'Kaewkhaw GFP+ 3D Retina') %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP+ 3D Retina (Kaewkhaw)') %>% 
     select(-Age_Days)
   fetal_tissue <- p %>% 
     filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% 
@@ -257,7 +257,7 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
 # all makers 
 marker_split_plot <- plotter_split(all_markers, annotation = T)
 #draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
-svg("figures_and_tables/heatmap_retina_time_series.svg", width = 11, height = 11)
+svg("figures_and_tables/heatmap_retina_time_series.svg", width = 12, height = 11)
 draw(marker_split_plot, padding = unit(c(15,15,15,15),"mm"))
 dev.off()
 
