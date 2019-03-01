@@ -6,7 +6,7 @@ library(pool)
 library(RSQLite)
 gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/Arges/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
 
-rgc <- c('GAP43', 'POU4F1', 'ISL1', 'POU4F2','ATOH7','DLX2','SHH','DLX2', 'POU4F2', 'POU4F3', 'NEFL', 'GAP43', 'SNCG')
+rgc <- c('GAP43', 'POU4F1', 'ISL1', 'ATOH7','SHH','DLX2', 'POU4F2', 'POU4F3', 'NEFL', 'SNCG')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
 # cone_rod <- c('NEUROD1','CRX','RORB','GUCA1B','GUCA1A','GUCY2D','PRPH2','RP1','RBP3','TULP1','AIPL1','RCVRN','GUCY2F','SLC24A1')
 cone <- c('RXRB','THRB','RORA','GNAT2','ARR3','GNGT2','PDE6C','CNGA3','PDE6H','GNB3','GUCA1C','OPN1MW','OPN1SW','OPN1LW','GRK7')
@@ -274,21 +274,157 @@ related_split_plot + related_merge_plot
 
 
 
-# diff gene set -----
-plotter_split(gene_pool_2019 %>% tbl('limma_DE_gene') %>% filter(Comparison == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell') %>% left_join(gene_pool_2019 %>% tbl('gene_IDs')) %>% filter(gene_type == 'protein_coding') %>% head(20) %>% pull(ID))
 
 
-# GO Terms
+
+# function to split by experiment / study / type -------
+plotter_split2 <- function(gene_vector, annotation = F, breaks = c(0,5,10,15), split) {
+  gene <- gene_vector
+  query = paste0('select * from lsTPM_gene where ID in ("',paste(gene, collapse='","'),'")')
+  p <- dbGetQuery(gene_pool_2019, query) %>% left_join(.,core_tight_2019) %>% 
+    left_join(., gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()) %>% 
+    as_tibble()
+  
+  ESC <- p %>% 
+    filter(Tissue == 'ESC') %>% 
+    mutate(Days = 0, Type = 'ESC') %>% 
+    group_by(ID, Days) %>% 
+    summarise(value = mean(value)) %>% 
+    mutate(Days = as.integer(Days))
+  organoid_swaroop_GFP <- p %>% 
+    filter(Sub_Tissue == 'Retina - 3D Organoid Stem Cell', !grepl('GFP negative', sample_attribute), study_accession != 'SRP159246') %>% 
+    group_by(ID, Age_Days) %>% 
+    summarise(value = mean(value)) %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP+ 3D Organoid') %>% 
+    select(-Age_Days)
+  organoid_swaroop_GFPneg <-  p %>% 
+    filter(Sub_Tissue == 'Retina - 3D Organoid Stem Cell', grepl('GFP negative', sample_attribute), study_accession != 'SRP159246') %>% 
+    group_by(ID, Age_Days) %>% 
+    summarise(value = mean(value)) %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP- 3D Retina (Kaewkhaw)')%>% 
+    select(-Age_Days)
+  organoid_johnston <-  p %>% 
+    filter(study_accession == 'SRP159246') %>% 
+    group_by(ID, Age_Days) %>% 
+    summarise(value = mean(value)) %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'GFP+ 3D Retina (Kaewkhaw)') %>% 
+    select(-Age_Days)
+  fetal_tissue <- p %>% 
+    filter(Sub_Tissue == 'Retina - Fetal Tissue') %>% 
+    group_by(ID, Age_Days) %>% 
+    summarise(value = mean(value)) %>% 
+    mutate(Days = as.integer(Age_Days), Type = 'Fetal Tissue') %>% 
+    select(-Age_Days)
+  adult_tissue <- p %>% 
+    filter(Sub_Tissue == 'Retina - Adult Tissue') %>% 
+    group_by(ID) %>% 
+    summarise(value = mean(value), Type = 'Adult Tissue') %>% 
+    mutate(Days = 1000) 
+  
+  tissue <- bind_rows(fetal_tissue, adult_tissue)
+  x <- tissue
+  y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+  colnames(y) <- y['Days',]
+  colnames(y)[ncol(y)] <- 'Adult'
+  y <- y[-1,]
+  
+  
+  y <- y[gene_vector,]
+  one <- Heatmap(log2(y+1), cluster_columns = F,   
+                 column_title =  'Retina Tissue', 
+                 split = split,
+                 col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
+                 show_row_names = FALSE,
+                 name ='log2(TPM+1)',
+                 clustering_distance_rows = "pearson", 
+                 clustering_distance_columns = "euclidean")
+  
+  x <- rbind(organoid_swaroop_GFP, ESC)
+  y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+  colnames(y) <- y['Days',]
+  colnames(y)[1] <- 'ESC'
+  y <- y[-1,]
+  
+  y <- y[gene_vector,]
+  two <- Heatmap(log2(y), cluster_columns = F, column_title = 'GFP+ 3D\nRetina\n(Kaewkhaw)',
+                 split = split,
+                 col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
+                 clustering_distance_rows = "pearson", 
+                 clustering_distance_columns = "euclidean", 
+                 name ='log2(TPM+1)',
+                 show_row_names = FALSE,
+                 show_heatmap_legend = F)
+  
+  x <- rbind(organoid_swaroop_GFPneg, ESC)
+  y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+  colnames(y) <- y['Days',]
+  colnames(y)[1] <- 'ESC'
+  y <- y[-1,]
+  
+  y <- y[gene_vector,]
+  three <- Heatmap(log2(y), cluster_columns = F, column_title = 'GFP- 3D\nRetina\n(Kaewkhaw)',
+                   col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
+                   split = split,
+                   clustering_distance_rows = "pearson", 
+                   clustering_distance_columns = "euclidean", 
+                   name ='log2(TPM+1)',
+                   show_row_names = FALSE,
+                   show_heatmap_legend = F)
+  
+  x <- rbind(organoid_johnston, ESC)
+  y <- x %>% select(-Type) %>% spread(ID, value) %>% t()
+  colnames(y) <- y['Days',]
+  colnames(y)[1] <- 'ESC'
+  y <- y[-1,]
+  
+  y <- y[gene_vector,]
+  four <- Heatmap(log2(y), cluster_columns = F, column_title = '3D Retina (Eldred)', 
+                  col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
+                  split = split,
+                  clustering_distance_rows = "pearson", 
+                  clustering_distance_columns = "euclidean", 
+                  name ='log2(TPM+1)',
+                  show_heatmap_legend = F)
+  
+
+  if (!annotation){
+    one + two + three + four
+  } else {  one + two + three + four + ha}
+}
+
+
+
+# cadherin, rgc, hox
+# heatmap
+hoxb <- gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('HOXB', ID)) %>% filter(gene_type == 'protein_coding', ID != 'HOXB13') %>% pull(ID)
 cadherin <- (gene_pool_2019 %>% tbl('all_vs_all_GO') %>% filter(Set == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell', ONTOLOGY == 'BP') %>% as_tibble() %>% filter(!grepl('HIST1', geneID)) %>% head(1) %>% pull(geneID) %>% str_split(.,"<br>"))[[1]]
 
+svg("figures_and_tables/rgc_cadheren_hoxb__heatmap_retina_time_series.svg", width = 12, height = 12)
+split <- c(rep('Protocadherins', length(cadherin)), rep('RGC', length(rgc)), rep('HOXB', length(hoxb)))
+plotter_split2(c(cadherin, rgc, hoxb), split = split, breaks = c(0,3,9,12))
+dev.off()
 
-plotter_split(cadherin)
-plotter_split(gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('HOXB', ID)) %>% filter(gene_type == 'protein_coding') %>% pull(ID))
+# boxplot
+svg("figures_and_tables/rgc_cadheren_hoxb__barplot.svg", width = 10, height = 6)
+gene_pool_2019 %>% 
+  tbl('limma_DE_gene') %>% 
+  filter(Comparison == 'Retina_Fetal.Tissue-Retina_3D.Organoid.Stem.Cell') %>% 
+  left_join(gene_pool_2019 %>% tbl('gene_IDs')) %>% 
+  filter(ID %in% c(cadherin, rgc, hoxb)) %>% 
+  select(ID, logFC, adj.P.Val) %>% 
+  as_tibble() %>% 
+  mutate(Class = case_when(ID %in% cadherin ~ 'Protocadherins',
+                           ID %in% rgc ~ 'RGC',
+                           TRUE ~ 'HOXB')) %>% 
+  ggplot(aes(x=ID, y=logFC, fill = Class)) + geom_bar(stat='identity') +
+  facet_wrap(~Class,scales = "free_x") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_fill_manual(values = c(magma(10)[2], magma(10)[4], magma(10)[8]))
+dev.off()
 
-
-plotter_split(c(gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble() %>% filter(grepl('POU4F', ID)) %>% filter(gene_type == 'protein_coding') %>% pull(ID), 'NEFL','GAP43','SNCG'))
-
-
-
-
-
+# glue together
+library(cowplot)
+bar <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/rgc_cadheren_hoxb__barplot.svg', width = 1800, height =1200))
+heatmap <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/rgc_cadheren_hoxb__heatmap_retina_time_series.svg', width = 1800, height =1800))
+svg("figures_and_tables/rgc_cadheren_box_fig.svg", width = 10, height = 6)
+cowplot::plot_grid(heatmap, NULL, bar, rel_widths = c(1,0,1), ncol=3, scale = c(1,1))
+dev.off()

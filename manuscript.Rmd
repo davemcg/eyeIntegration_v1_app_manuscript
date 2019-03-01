@@ -314,8 +314,7 @@ knitr::include_graphics('figures_and_tables/zoom_heatmap_retina.png')
 
 To identify specific changes between organoid and retina tissue, we did differential gene expression and GO term enrichment analyses. GO term enrichment identified cell adhesion (protocadherins) and patterning (HOXB family) as enriched gene sets. We also noticed that several RGC markers appeared to have lower expression in the organoids compared to the fetal tissue `r paste0(fig_cap(name = 'tsneFetalRetina', display = 'cite'),'B')`.
 
-We plotted these sets of genes 
-Analysis of broad trends in GO term enrichment between differentially expressed genes shows that the HOXB family and protocadherins are differentially expressed between fetal retina and organoids. We noticed that several BRN3/POU4F genes were also differentially regulated
+We plotted these three sets of genes in the heatmap view, with columns as age in days of fetal or organoid retina and rows are genes. We see that there are strong, consistent gene expression changes in these three groups of genes between fetal retina and the organoid samples (`r paste0(fig_cap(name = 'rgc_cadherin_hoxb', display = 'cite'))`). We also plot the differential expression differences between all organoids and all fetal retina samples; all genes across all three sets are significantly differentially expressed with a FDR corrected p value < 0.01. 
 
 ## Data accessibility 
 Individual data files for gene expression and sample metadata can be downloaded from the ‘Data’ tab on the web app. All data and code used to generate the web app can be installed from the R command line by running devtools::install_github(‘davidmcg/eyeIntegration_app’). The code for the EiaD data processing pipeline can be found at https://github.com/davidmcg/Eyeintegration_autobuild. 
@@ -384,6 +383,12 @@ plot_grid(make_pca_tissue('Brain'), make_pca_tissue('Pituitary'),
           align = 'hv')
 ```
 
+```{r rgc_cadherin_hoxb, echo = F, message = F, warning=F, fig.width = 10, fig.pos='H', fig.cap = snakemakeDAG_cap}
+rgc_cadherin_hoxb_cap <- supFig_cap(name='rgc_cadherin_hoxb', caption = 'Heatmap of three sets of genes across fetal retina and organoids divided by age in days (A). Bar plot of differential expression from retina to organoid, where positive values are genes that are higher expressed in fetal tissue than organoid. All logFC expression values have FDR corrected p value  < 0.01.')
+
+knitr::include_graphics('figures_and_tables/rgc_cadheren_box_fig.png')
+```
+
 ```{r tableSampleCountsGTEx, echo = F, results='asis', warning = F, fig.cap = tableSampleCountsGTEx_cap, fig.pos = 'H'}
 tableSampleCountsGTEx_cap <- supTab_cap(name='tableSampleCountsGTEx', caption = 'EiaD holds hundreds of GTEx tissues to provide a broad comparison set')
 # Output <div>
@@ -448,9 +453,17 @@ cat("</div>")
 GOterm_cap <- supTab_cap(name='GOterm_fetal_retina_organoid', caption = 'Top GO terms enriched between fetal retina and organoid retina, after paring of redundant terms with REVIGO')
 # Output <div>
 cat("<div id=\"tbl:GOterm_fetal_retina_organoid\">")
-organoid_fetal_GO %>% filter(ID %in% c('GO:0001503','GO:0031589','GO:0050878','GO:0061448','GO:0050678','GO:0030335','GO:0030198', 'GO:0007156', 'GO:0050769', 'GO:0030099')) %>% mutate(geneID = gsub('<br>', ' ', geneID)) %>% as_tibble() %>% regulartable() %>% 
+organoid_fetal_GO %>% 
+  dplyr::select(-ONTOLOGY, -BgRatio, -p.adjust, -Count, -Test, -Set) %>% 
+  filter(ID %in% c('GO:0001503','GO:0031589','GO:0050878','GO:0061448','GO:0050678','GO:0030335','GO:0030198', 'GO:0007156', 'GO:0050769', 'GO:0030099')) %>% 
+  mutate(geneID = gsub('<br>', ' ', geneID)) %>% 
+  as_tibble() %>% 
+  regulartable() %>% 
+  flextable::fontsize(size = 8) %>% 
+  width(width = c(1,1,1,1,1,2)) %>% 
   flextable::align(align='center') %>% 
-  font(fontname = 'Linux Libertine O', part = 'all')
+  font(fontname = 'Linux Libertine O', part = 'all') 
+#
 #Output Caption (* * for italics)
 cat(paste0("\n*",GOterm_cap,"*\n"))
 # Output </div>
