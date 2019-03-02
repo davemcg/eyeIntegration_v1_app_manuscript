@@ -480,7 +480,7 @@ cat("</div>")
 ```
 # Acknowledgements
 
-We would like the thank the dozens of groups who provided the raw data required to create this project. We are keeping a running list of the projects and citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions of the eyeIntegration app over the past two years. This work utilized the computational resources of the NIH HPC Biowulf cluster (http://hpc.nih.gov).
+We would like the thank the dozens of groups who provided the raw data required to create this project. We keep a running list of the projects and associated citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions in the development of eyeIntegration app over the past two years. Tiziana Cogliati was especially helpful in the editing of this manuscript. Finally, this work utilized the computational resources of the NIH HPC Biowulf cluster (http://hpc.nih.gov).
 
 # Funding
 
