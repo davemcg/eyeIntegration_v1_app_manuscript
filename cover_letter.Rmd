@@ -3,7 +3,13 @@ title: 'Eye in a Disk: eyeIntegration human pan-eye and body transcriptome datab
   version 1.0'
 author: "David McGaughey"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
-output: word_document
+output:
+  word_document:
+    reference_docx: word-styles-reference-01.docx
+    fig_caption: yes
+    pandoc_args:
+      - '--lua-filter=scholarly-metadata.lua'
+      - '--lua-filter=author-info-blocks.lua'
 ---
 
 To the editor,
