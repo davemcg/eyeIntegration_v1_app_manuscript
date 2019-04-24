@@ -25,16 +25,41 @@ This manuscript describes a database on genes from tissues of the eye into an ac
 1. Figure 4 is not readable. If this is going to be useful illustration of potential, it would be better to do each of the 5 subparts as a separate figure. Similarly, Figure 5 would be better separated into 2 figures with increased readability.
 2. Minor typos in the manuscript, but otherwise clearly written.
 ```
+Move Figure 4 to supplemental figure?
+
+Split Figure 5 into two figures?
 
 ```
 Reviewer #1 (Comments for the Author (Required)):
 
 Building on the eyeIntegration web resource released in 2017, the authors re-wrote the bioinformatics pipeline and created one of the most comprehensive "reproducible and versioned transcriptome dataset" - eye in a Disk (EiaD) and updated the eyeIntegration web app, now integrating deep sequencing data from 371 human eye tissue samples and 848 GTEx samples across 44 tissues to allow quick search and visualization of human eye-related transcriptomes and make comparisons and identify differentially expressed genes among 14 various eye tissues and 44 other body tissues. It also included newly-published single cell seq data of developing and adult mouse retina. It is a powerful addition to the bioinformatics tools for the visual science community. In general, the manuscript is straightforward description of the development of the dataset and a guide to the web app. There are some minor clarifications should be done:
+```
+
+```
 1) The authors quantified expression "across 42 gene and 46 transcript types" (supplemental table 2). Please describe the difference or relationship between of the "gene" and "transcript" types. Are they pretty much overlapping to each other?
+```
+
+All quantification of expression happens at the transcript level. As most people think in terms of gene expression, we collapse all of the transcript level information information into a gene. Very briefly, the expression from each transcript of a gene is averaged, with scaling for the length of the transcript. If there are transcripts (of equal length) a1 (5 counts), a2 (6 counts), and a3 (7 counts) for gene a, then gene a would have an expression of (5 + 6 + 7) / 3. 
+
+
+
+```
 2) "Figure 2: Raw RNA seq data ....... Visualizations across 63 tissues": are these 63 tissues the same as described in the abstract "44 body and 14 eye tissues", what are the extra 5 [63-(44+14)]? 
+```
+
+```
 3) Line 179: "To create a high quality final dataset across the 1311 initial samples (suppl fig and table 2)". Are these "1311 initial samples" the same as "371 human eye tissue samples and 848 GTEx" described on line 158-159. If so, 371+848 ≠ 1311? 
+```
+
+```
 4) In Figure 3, the colors of ESC and lens, retina and RPE are too close to each other, and hard to be distinguished. More distinctive, different colors would help. What is the total number of clusters? A table listing all the clusters and the composition of each cluster should be included as a supplemental table. 
+```
+
+```
 5) Line 208, ".... Then genes (or transcripts), then tissues." The "genes" should be "gene IDs by official gene name". The tables derived from "expression" search (e.g. Fig.4A) should be further annotated, e.g. define what are "decile", "log2(PMT+1)", etc. 
+```
+
+```
 6) Since this dataset and web app is built in the way that "future sample updates can be streamlined in with less effort", perhaps advice on how future deep sequencing and single cell seq data should be organized for streamline updates should be added to the discussion.
 7) Many typos and some unfished edit should be corrected, e.g. Line 285 "citation" should be added!
 
