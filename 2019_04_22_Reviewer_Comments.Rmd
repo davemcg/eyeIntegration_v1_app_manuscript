@@ -162,7 +162,7 @@ In principle we agree. We were not expecting use the t-SNE parameters so heavily
 
 We are using the euclidean distance in a *qualitative* manner. This "cut-off" distance we select to remove samples is intended to only remove individual samples that are very far away like tissues. Nearly all of these outliers are not forming an independent group, but rather are near **other** tissues and thus are likely to be tube mislabels / sample extraction errors. Another possibility are samples which had technical issues with sequencing that still passed the basic QC metrics cutoffs. 
 
-That said ** TRY THE COOK'S DISTANCE SUGGESTION **
+That said ** TRY THE COOK'S DISTANCE SUGGESTIOeyeN **
 ```
 
 6. It would be helpful to learn why the authors chose 892 samples from 44 tissues in GTEx, when there are over 11,000 RNA-seq sample available for 50 tissues in the current GTEx release v7 that is available on dbGaP. Also, a recent publication from other investigators at NEI described a large RNA-seq dataset from human retinal samples (Nat Genet. 51:606-610, 2019). Will these data be incorporated into the eyeIntegration database? If so, it would be helpful if this were mentioned in the text. If not, this additional study and the resources derived from it could be referred to.
@@ -181,14 +181,16 @@ group <- metadata %>%
   select(sample_accession, Tissue) %>% 
   unique() %>% 
   pull(Tissue)
-d <- DGEList(tpm[,2:ncol(tpm)], group = groups)
+d <- DGEList(tpm[,2:ncol(tpm)], group = group)
 d <- calcNormFactors(d)
 d <- estimateCommonDisp(d)
+d <- estimateTagwiseDisp(d)
+
 power <- c()
 for (i in seq(5,100,5)){
-  power <- c(power, check.power(nGenes = 37000, pi0 = 0.6, i, d$counts[,1], d$tagwise.dispersion, 2, up = 0.5,  replace = TRUE, fdr = 0.05, sims = 2)$pow_qvalue_ave)}
+  power <- c(power, check.power(nGenes = 37000, pi0 = 0.6, i, d$counts[,1], d$tagwise.dispersion, 2, up = 0.5,  replace = TRUE, fdr = 0.05, sims = 5)$pow_qvalue_ave)}
 
-data %>% ggplot(aes(x=V1, y=power)) + geom_line() + theme_minimal() + labs(x='Number of Samples in Each Group', y = 'Power to Detect 1 log2(FC)') + scale_x_continuous(breaks = seq(10,100,10), labels = seq(10,100,10))
+as_tibble(cbind(seq(5,100,5), power)) %>% ggplot(aes(x=V1, y=power)) + geom_line() + theme_minimal() + labs(x='Number of Samples in Each Group', y = 'Power to Detect 1 log2(FC)') + scale_x_continuous(breaks = seq(10,100,10), labels = seq(10,100,10))
             
             
 The value of the full GTEx dataset comes in the power to identify expression quantitative trait loci (eQTL). For differential gene expression by tissue, far fewer samples are needed. A power calculation we ran gives us 80+% power to detect >= 1 log2(FC) gene expression differences with a 20 samples x 20 sample comparision. As we have many more eye samples, this is a underestimate of our power when doing eye vs (body) comparisons. We have added the power calculation as supplemental figure. 
