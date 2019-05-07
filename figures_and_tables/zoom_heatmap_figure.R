@@ -83,6 +83,12 @@ stat_chull <- function(mapping = NULL, data = NULL, geom = "polygon",
   )
 }
 
+# set color levels
+color <- c('#7fc97f','#beaed4','#ffff99','#fdc086','#386cb0','#f0027f', '#000000', '#000000', '#000000', '#000000')
+names(color) <- c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE', 'GTEx', 'Brain', 'Pituitary', 'Blood', 'Skin')
+custom_fill <- scale_fill_manual(values = color)
+custom_col <- scale_colour_manual(values = color)
+
 zoom_plot <- tsne_50_prep %>% 
   rowwise() %>% 
   mutate(Age = as.numeric(Age_Days)) %>% 
@@ -102,14 +108,15 @@ zoom_plot <- tsne_50_prep %>%
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
   #geom_point(size=8, alpha=0.2, aes(colour=Group)) +
+  stat_chull(data=tsne_zoom %>% 
+               mutate(`Sub-Tissue Cluster` = Cluster_Tissues),aes(fill=`Sub-Tissue Cluster`), alpha = 0.6) +
   geom_point(size=2, alpha=1, aes(shape=Origin, colour = Group)) +
   xlab('t-SNE 1') + ylab('t-SNE 2') +
   facet_zoom(xy = Group == 'Retina', zoom.size = 2, horizontal = F, zoom.data=zoom) + 
   geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
-  stat_chull(data=tsne_zoom %>% 
-               mutate(`Sub-Tissue Cluster` = Cluster_Tissues),aes(fill=`Sub-Tissue Cluster`), alpha = 0.3) +
-  scale_color_discrete_sequential(palette = 'viridis') + 
-  scale_fill_viridis_d(option = 'plasma') +
+  
+  custom_col + 
+  scale_fill_manual(values = c('#3b96e5', '#8ec4f2', '#7be276')) +
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), ncol=2),
          shape = guide_legend(ncol =2 )) +

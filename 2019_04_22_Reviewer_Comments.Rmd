@@ -25,9 +25,9 @@ This manuscript describes a database on genes from tissues of the eye into an ac
 1. Figure 4 is not readable. If this is going to be useful illustration of potential, it would be better to do each of the 5 subparts as a separate figure. Similarly, Figure 5 would be better separated into 2 figures with increased readability.
 2. Minor typos in the manuscript, but otherwise clearly written.
 ```
-Move Figure 4 to supplemental figure?
+We have reduce the number of panels in Figure 4 to two and moved the remaining panels to a supplementary figure.
 
-Split Figure 5 into two figures?
+Figure 5 has been split into two separate figures. 
 
 ```
 Reviewer #1 (Comments for the Author (Required)):
@@ -39,26 +39,27 @@ Building on the eyeIntegration web resource released in 2017, the authors re-wro
 1) The authors quantified expression "across 42 gene and 46 transcript types" (supplemental table 2). Please describe the difference or relationship between of the "gene" and "transcript" types. Are they pretty much overlapping to each other?
 ```
 
-All quantification of expression happens at the transcript level. As most researchers think in terms of gene expression, we collapse all of the transcript level information information into a gene. Very briefly, the tximport tool (https://f1000research.com/articles/4-1521/v2) is used to collapse expression from each transcript of a gene is averaged, with scaling for the length of the transcript. 
-
-We have 
-
+Supplmental table 2 is unnecessarily confusing. There are no differences between the "gene type" whether at the gene or transcript level. We have added the Gencode description of the biotypes to the table and given the counts as "Gene Counts" or "Transcript Counts" for each biotype. 
 
 
 ```
 2) "Figure 2: Raw RNA seq data ....... Visualizations across 63 tissues": are these 63 tissues the same as described in the abstract "44 body and 14 eye tissues", what are the extra 5 [63-(44+14)]? 
 ```
 
-Number check!
+We originally had 63 tissues - several were removed as they had an insufficient number of samples after quality control. I've updated the text for this figure legend to reflect the final number (58). 
 
 ```
 3) Line 179: "To create a high quality final dataset across the 1311 initial samples (suppl fig and table 2)". Are these "1311 initial samples" the same as "371 human eye tissue samples and 848 GTEx" described on line 158-159. If so, 371+848 ≠ 1311? 
 ```
-Number check!
+1311 went into the pipeline. 30 GTEx and 62 eye samples were removed for a variety of QC reasons (see sup table). 371 + 848 + 30 + 62 = 1311. This was made more clear in the text. ** PUT IN NEW QUOTE AFTER KNITTING WORD DOCUMENTS** 
 ```
 4) In Figure 3, the colors of ESC and lens, retina and RPE are too close to each other, and hard to be distinguished. More distinctive, different colors would help. What is the total number of clusters? A table listing all the clusters and the composition of each cluster should be included as a supplemental table. 
 ```
-Number check!
+Updated colors.
+
+There are 33 total clustesr. We have added a supplementary table summarizing the Sub Tissue composition of each one. 
+
+tsne_50 %>% group_by(Cluster, Sub_Tissue) %>% summarise(Count = n()) %>%  mutate(Sub_Tissue = trimws(Sub_Tissue))  %>% rename(`Sub Tissue` = Sub_Tissue)  %>% flextable::regulartable()
 ```
 5) Line 208, ".... Then genes (or transcripts), then tissues." The "genes" should be "gene IDs by official gene name". The tables derived from "expression" search (e.g. Fig.4A) should be further annotated, e.g. define what are "decile", "log2(PMT+1)", etc. 
 ```
@@ -140,57 +141,36 @@ This question is also being asked because Salmon is an alignment-free method tha
 
 The major way we handle non-biological batch effects is through the use of https://github.com/stephaniehicks/qsmooth, which reshapes the distribution of gene expressions values to be consistent among each tissue type (e.g. Retina/RPE/cornea). We demonstrate the effect of this tool in **LAST PAPER**
 
-While  ComBat is an extremely popular and powerful tool to remove batch effects, I am hesitant to use as there is some empirical evidence that these types of tools may overinflate confidence in group differences (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4679072/). 
+While  ComBat is an extremely popular and powerful tool to remove batch effects, I am hesitant to use as there is some evidence that these types of tools may overinflate confidence in group differences (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4679072/). 
 
 In these situations, I prefer to do less and let the data "speak" for themselves. This is why the primary output of eyeIntegration is a boxplot with the individual data points drawn; this allows the user to get a quick sense of the variance and skew of the data across many datasets. 
-
-
 
 ```
 4. Further information about the quality control and filtering applied to the RNA-seq data would be helpful to include in the manuscript. For example, how were the parameters for filtered by a mapping rate of 40% per sample and median read count >2 across all genes per sample selected? Also, basic statistics related to read mapping such as min, max, average, 25 quartile, 75 quartile of mapping should be included. 
 ```
-
-Parameters selected by checking distributions and picking the parameter that removes the left tail. 
-
-Good idea - add those statistics
+Parameters selected by checking distributions and picking the parameter that removes the left tail. We have added mapping rate as a supplementary figure and edited the text in the methods accordingly. 
 
 ```
 5. To identify outlier samples the authors measured the distances of each sample from the centroid coordinates per cluster using a t-SNE plot. t-SNE is good for visualization but not for quantification of relative distance between samples and sample sets. The t-SNE retains probabilities not distances and hence the Euclidean distances between points on the 2-dimensional t-SNE plot are not informative. t-SNE documentation suggests that Kullback-Leibler divergences reported by t-SNE can be used for this purpose. This reviewer recommends use of coordinates from other dimensionality reduction methods such as Principal Coordinates Analysis (PCoA) or PCA, or a correlation-based statistic that compares the expression profile of each sample to the profiles of all samples in a given sample set (D statistic) to identify outlier samples, such as described in Nature Genetics 46: 430, 2014. 
 ```
 
-In principle we agree. We were not expecting use the t-SNE parameters so heavily. We were surprised in our first paper that the t-SNE worked so well in clustering samples by tissue (though this may be overfitting ** ADD LIMITATION to manuscript**). 
+I wrote a long explanation of how what we are doing is reasonable, but then thought some more and now have come around to your position. While this t-SNE / euclidean distance cutoff approach works on a empirical level, it is a poor idea.
 
-We are using the euclidean distance in a *qualitative* manner. This "cut-off" distance we select to remove samples is intended to only remove individual samples that are very far away like tissues. Nearly all of these outliers are not forming an independent group, but rather are near **other** tissues and thus are likely to be tube mislabels / sample extraction errors. Another possibility are samples which had technical issues with sequencing that still passed the basic QC metrics cutoffs. 
-
-That said ** TRY THE COOK'S DISTANCE SUGGESTIOeyeN **
+We have implemented the outlier-by-correlation-to-group approach you suggested (Nature Genetics 46: 430, 2014).
 ```
 
 6. It would be helpful to learn why the authors chose 892 samples from 44 tissues in GTEx, when there are over 11,000 RNA-seq sample available for 50 tissues in the current GTEx release v7 that is available on dbGaP. Also, a recent publication from other investigators at NEI described a large RNA-seq dataset from human retinal samples (Nat Genet. 51:606-610, 2019). Will these data be incorporated into the eyeIntegration database? If so, it would be helpful if this were mentioned in the text. If not, this additional study and the resources derived from it could be referred to.
 ```
 
-** DO POWER CALCULATION **
+The value of the full GTEx dataset comes in the power to identify expression quantitative trait loci (eQTL). For differential gene expression by tissue, far fewer samples are needed. A power calculation we ran gives us 80+% power to detect >= 1 log2(FC) gene expression differences with a 20 sample x 20 sample comparision. We would reach a power of 90% with 30 samples, so we have added 10 more samples to each GTEx tissue group. As we have many more eye samples, this is likely an underestimate of our power when doing eye vs (body) comparisons. 
 
-library(ssizeRNA)
-library(edgeR)
-library(tidyverse)
-tpm <- read_tsv('https://hpc.nih.gov/~mcgaugheyd/eyeIntegration/2019_gene_TPM_03.tsv.gz')
-metadata <- read_tsv('https://hpc.nih.gov/~mcgaugheyd/eyeIntegration/2019_metadata_03.tsv.gz')
- 
-group <- metadata %>% 
-  filter(sample_accession %in% names(tpm)) %>% 
-  select(sample_accession, Tissue) %>% 
-  unique() %>% 
-  pull(Tissue)
-d <- DGEList(tpm[,2:ncol(tpm)], group = group)
-d <- calcNormFactors(d)
-d <- estimateCommonDisp(d)
-d <- estimateTagwiseDisp(d)
+We have added the power calculation as supplemental figure. 
 
-power <- c()
-for (i in seq(5,100,5)){
-  power <- c(power, check.power(nGenes = 37000, pi0 = 0.6, i, d$counts[,1], d$tagwise.dispersion, 2, up = 0.5,  replace = TRUE, fdr = 0.05, sims = 5)$pow_qvalue_ave)}
+While it would be nice in *principal* to just use the entire GTEx dataset, there are very practical limiations on why this is inconvenient - the size of the full GTEx datasets, raw, is around 1 petabyte of data, which is very slow to move around and do any compute on. Also this amount of storage space brushes against the limits of our compute cluster. 
 
-as_tibble(cbind(seq(5,100,5), power)) %>% ggplot(aes(x=V1, y=power)) + geom_line() + theme_minimal() + labs(x='Number of Samples in Each Group', y = 'Power to Detect 1 log2(FC)') + scale_x_continuous(breaks = seq(10,100,10), labels = seq(10,100,10))
-            
-            
-The value of the full GTEx dataset comes in the power to identify expression quantitative trait loci (eQTL). For differential gene expression by tissue, far fewer samples are needed. A power calculation we ran gives us 80+% power to detect >= 1 log2(FC) gene expression differences with a 20 samples x 20 sample comparision. As we have many more eye samples, this is a underestimate of our power when doing eye vs (body) comparisons. We have added the power calculation as supplemental figure. 
+As for the Ratnapriya/Swaroop data, we mention it briefly in our introduction, but we hadn't added the data to eyeIntegration as it became available shortly after our last data pull. 
+
+We have surveyed the SRA / GEO again and have added new studies (including the Ratnapriya/Swaroop) project data to eyeIntegration.
+
+As the AMD data they collected are likely to be of interest, we have made an exception to our "normal tissue" policy and have added the different AMD stages as selectable tissue options. 
+
