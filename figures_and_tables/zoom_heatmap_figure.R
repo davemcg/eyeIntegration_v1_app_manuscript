@@ -6,6 +6,32 @@ library(cowplot)
 library(ggrepel)
 library(colorspace)
 
+dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
+tsne_50$Cluster <- dbscan_cluster$cluster
+col1 = 'X1'
+col2 = 'X2'
+# create label points for each cluster
+cluster_centers <- tsne_50 %>%
+  left_join(.,core_tight_2019) %>% group_by(Cluster) %>%
+  summarise(C1=mean(!!sym(col1)),C2=mean(!!sym(col2)),Tissue=paste(unique(Tissue),collapse=','))
+
+# samples closest to center in each cluster
+center_samples <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
+  left_join(.,cluster_centers, by=c('Cluster')) %>%
+  mutate(Distance = (!!sym(col1)-C1)+(!!sym(col2)-C2)) %>%
+  group_by(Cluster) %>%
+  dplyr::slice(which.min(Distance)) %>%
+  dplyr::slice(1) %>% 
+  .[['sample_accession']]
+
+# cluster stats
+cluster_stats <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
+  mutate(Origin = gsub('Organoid','Stem Cell', Origin)) %>% 
+  mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line'))) %>%
+  mutate(Cluster = as.factor(Cluster)) %>%
+  group_by(Cluster) %>%
+  summarise(Cluster_Tissues = paste(unique(Tissue), collapse=',\n'), Cluster_Counts = paste(n(), ' samples', sep=''))
+
 # set up for ggplot
 tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
   left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 

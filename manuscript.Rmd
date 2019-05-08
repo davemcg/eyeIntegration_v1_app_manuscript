@@ -283,16 +283,16 @@ The EiaD 2019 dataset is used directly by the eyeIntegration web app (https://ey
 The 'Expression' tab of the webpage provides a wealth of information about both gene- and transcript-level expression for eye and body tissues, giving the user the ability to compare the expression of different genes within a single tissue, as well as the expression of genes across multiple tissues  (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'A')`). The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then Hugo Gene Nomeclature Committee (HGNC) genes names (or ENSEMBL transcripts), then tissues. A boxplot is then generated after hitting the "Re(Draw) Plot" button with overlaid individual data points. On mouse-over, the metadata for the individual sample is displayed. A tabular report is generated based on selected genes and tissues: a table with links to Ensembl, GeneCard, and OMIM for each gene for quick referencing, and a table containing expression levels for each selected gene in each selected tissue. The tables can be arranged or sorted to the user’s preference and can be easily downloaded for local use. 
 
 ```{r appScreenshots, echo = F, fig.cap = appScreenshots_cap, fig.width=12}
-appScreenshots_cap <- fig_cap(name='appScreenshots', caption = 'Screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. B. Heatmap visualization. C. CRX mouse retina gene expression heatmap and table information from Clark et al. E11 to P14 scRNA-seq. D. t-SNE visualization of gene expression profiles of individual cells from Macosko et al. E. Data table export view. F. Differential gene expression across different tissues and with GO term enrichment.')
+appScreenshots_cap <- fig_cap(name='appScreenshots', caption = 'Screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. B. Heatmap visualization.')
 
 knitr::include_graphics('figures_and_tables/Figure 2.png')
 ```
 
-Heatmaps based on expression can be drawn for selected genes and tissues and gene expression can be compared across many genes and tissues (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'B')`). Finally, a session can be saved or shared by building a custom link for the session with the "Build URL Shortcut" button. 
+Heatmap built by the R package ComplexHeatmaps based on expression can be drawn for selected genes and tissues and gene expression can be compared across many genes and tissues (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'B')`) [@guComplexHeatmapsReveal2016]. Finally, a session can be saved or shared by building a custom link for the session with the "Build URL Shortcut" button. 
 
 ## Differential expression and gene ontology enrichment tests allow quick comparison of gene differences between groups
 
-We performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in our subset of the GTEx dataset, allowing quick identification of eye specific genes across `r limma_DE_tests %>% nrow()` different comparisons. We have expanded the differential tests in the 2019 EiaD by adding the GTEx tissues as direct comparisons to our eye sub-tissues. The user can view the results selecting ‘Differential’ under the ‘Expression’ tab (`r paste0(fig_cap(name = 'appScreenshots', display = 'cite'),'F')`).  As with 'Expression', the user can select which version of the web app to draw data from as well as select for gene- or transcript-level comparisons. The user additionally has the option to select different gene classes to examine, e.g. protein coding, lincRNA.
+We performed multiple differential comparisons at the sub-tissue level within all eye tissues and against a pan-body synthetic set comprised of a stratified sample of all tissues present in our subset of the GTEx dataset, allowing quick identification of eye specific genes across `r limma_DE_tests %>% nrow()` different comparisons. We have expanded the differential tests in the 2019 EiaD by adding the GTEx tissues as direct comparisons to our eye sub-tissues. The user can view the results selecting ‘Differential’ under the ‘Expression’ tab (`r paste0(supFig_cap(name = 'appScreenshots_sup', display = 'cite'),'D')`).  As with 'Expression', the user can select which version of the web app to draw data from as well as select for gene- or transcript-level comparisons. The user additionally has the option to select different gene classes to examine, e.g. protein coding, lincRNA.
 
 The results of differential expression are presented in a tabular format showing log~2~ fold change, average expression, and p-values. Depending on the comparison, there are `r q01_limma_gene_sig %>% pull(Count) %>% sort() %>% head(1)` to `r q01_limma_gene_sig %>% pull(Count) %>% sort() %>% tail(1)` differentially expressed genes (Supplementary Files). The table can be easily searched for any given gene, viewed and ordered to the user’s preference, and downloaded in CSV format. Differential expression can be visualized through fold change bar graphs with the ‘Pan-tissue plots’ selection under ‘Expression’. Additionally, we performed GO enrichment for all differential comparisons. Enriched GO terms are presented first as a word cloud, for quick comparison of GO enrichment.  We provide tables, with similar viewing options as the differential expression table, for enriched GO terms in each class of a given differential comparison.
 
@@ -354,13 +354,14 @@ mapping_rate <- read_delim('data/mapping_rate.txt', delim = ' ', col_names = F) 
 mapping_stats <- core_tight_2019 %>% left_join(mapping_rate) %>% pull(`Mapping Rate`) %>% summary() %>% broom::tidy()
 mapping_rate_cap <- supFig_cap(name='mapping_rate_cap', caption = paste0('Salmon mapping rate for each sample, grouped by tissue type. 1st quartile mapping rate is ', mapping_stats$q1, '%, median is ', mapping_stats$median, '%, mean is ', mapping_stats$mean, '%, and third quartile is ', mapping_stats$q3, '%.'))
 core_tight_2019 %>% 
-  left_join(mapping_rate) %>% 
+  left_join(mapping_rate, by = 'sample_accession') %>% 
   ggplot(aes(x=Tissue, y = `Mapping Rate`)) + 
   ggbeeswarm::geom_quasirandom() + 
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + coord_cartesian(ylim=c(0,100))
 
 ```
+
 
 ```{r snakemakeDAG, echo = F, message = F, warning=F, fig.height = 8, fig.width = 10, fig.pos='H', fig.cap = snakemakeDAG_cap}
 snakemakeDAG_cap <- supFig_cap(name='snakemakeDAG', caption = 'Snakemake pipeline to create EiaD 2019 consists of small modular compute sections to ensure sample tracking through the full pipeline')
@@ -405,6 +406,13 @@ plot_grid(make_pca_tissue('Brain'), make_pca_tissue('Pituitary'),
           align = 'hv')
 ```
 
+
+```{r appScreenshots_sup, echo = F, message = F, warning=F, fig.height = 8, fig.width = 10, fig.pos='H', fig.cap = appScreenshots_sup}
+appScreenshots_sup <- supFig_cap(name='appScreenshots_sup', caption = 'A. CRX mouse retina gene expression heatmap and table information from Clark et al. E11 to P14 scRNA-seq. B. t-SNE visualization of gene expression profiles of individual cells from Macosko et al. C. Data table export view. D. Differential gene expression across different tissues and with GO term enrichment.')
+
+knitr::include_graphics('figures_and_tables/eyeIntegration_web_view_01.png')
+```
+
 ```{r rgc_cadherin_hoxb, echo = F, message = F, warning=F, fig.width = 10, fig.pos='H', fig.cap = rgc_cadherin_hoxb_cap}
 rgc_cadherin_hoxb_cap <- supFig_cap(name='rgc_cadherin_hoxb', caption = 'Heatmap of three sets of genes across fetal retina and organoids divided by age in days (A). Bar plot of differential expression from retina to organoid, where positive values are genes that are higher expressed in fetal tissue than organoid (B). All logFC expression values have FDR corrected p value < 0.01.')
 
@@ -441,8 +449,8 @@ table <- table %>%
   rename(Biotype = Class) %>% 
   spread(Type, Count) %>% 
   rename(`Gene Count` = Gene, `Transcript Count` = Transcript) %>% 
-  left_join(info)
-regulartable(table%>% arrange(Definition)) %>% 
+  left_join(info, by = 'Biotype')
+regulartable(table %>% arrange(Definition)) %>% 
   width(width = c(2,1,1,4)) %>% 
  flextable::align(align = "center", part = 'header') %>% 
   flextable::align(align='right') %>% 
@@ -457,10 +465,11 @@ cat("</div>")
 metadata_cap <- supTab_cap(name='metadataTable', caption = 'Full metadata for 20 random eye samples. Full metadata available as supplementary file.')
 set.seed(1534)
 cat("<div id=\"tbl:metadataTable\">")
-flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_n(20) %>% left_join(mapping_rate) %>% rename(Mapping_Rate = `Mapping Rate`)) %>% 
+flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_n(20) %>% left_join(mapping_rate, by = 'sample_accession') %>% 
+            rename(Mapping_Rate = `Mapping Rate`)) %>% 
   font(fontname = 'Linux Libertine O', part = 'all') %>% 
-  fontsize(size = 6) %>% 
-  width(width = c(0.4,0.4,0.4,2.8,1,0.4,0.4,0.4,0.4,0.4,0.4))
+  fontsize(size = 5) %>% 
+  width(width = c(0.5,0.5,0.5,2,1,0.5,0.5,0.5,0.5,0.5,0.5))
 #Output Caption (* * for italics)
 cat(paste0("\n*",metadata_cap,"*\n"))
 # Output </div>
@@ -491,7 +500,7 @@ cat("</div>")
 ```
 # Acknowledgements
 
-We would like the thank the dozens of groups who provided the raw data required to create this project. We keep a running list of the projects and associated citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions in the development of eyeIntegration app over the past two years. Tiziana Cogliati was especially helpful in the editing of this manuscript. Finally, this work utilized the computational resources of the NIH HPC Biowulf cluster (http://hpc.nih.gov).
+We would like the thank the dozens of groups who provided the raw data required to create this project. We keep a running list of the projects and associated citations at https://github.com/davemcg/eyeIntegration_app/blob/master/inst/citations.md and strongly encourage anyone who uses EiaD and eyeIntegration to cite relevant projects. We would also like to thank Kapil Bharti, Robert Hufnagel, and Brian Brooks for their continuous set of critiques and suggestions in the development of eyeIntegration app over the past two years. Tiziana Cogliati was especially helpful in the editing of this manuscript. We also would like to thank the two anonymous reviewers for their constructive criticisms. Finally, this work utilized the computational resources of the NIH HPC Biowulf cluster (http://hpc.nih.gov).
 
 # Funding
 
