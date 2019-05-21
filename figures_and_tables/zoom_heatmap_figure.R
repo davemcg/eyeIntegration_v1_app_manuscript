@@ -1,10 +1,13 @@
-load('data/data_pull.Rdata')
 library(tidyverse)
 library(ggforce)
 library(dbscan)
 library(cowplot)
 library(ggrepel)
 library(colorspace)
+
+load('data/data_pull.Rdata')
+tsne_50 <- tsne_50 %>% filter(!grepl('MGS', Sub_Tissue)) %>% # remove AMD
+  filter(!(Tissue == 'Retina' & X1 < 0)) # remove one retina outlier
 
 dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
 tsne_50$Cluster <- dbscan_cluster$cluster
@@ -36,7 +39,7 @@ cluster_stats <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
 tsne_50_prep <- tsne_50 %>% select(-Origin) %>% 
   left_join(., core_tight_2019 %>% select(sample_accession, Origin), by = 'sample_accession') %>% 
   mutate(Origin = case_when(Sub_Tissue == 'Retina - 3D Organoid Stem Cell' ~ 'Organoid',
-         TRUE ~ Origin)) %>% 
+                            TRUE ~ Origin)) %>% 
   mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid'))) %>%
   mutate(Cluster = as.factor(Cluster)) %>%
   select(-Cluster_Tissues) %>% 
@@ -44,9 +47,9 @@ tsne_50_prep <- tsne_50 %>% select(-Origin) %>%
   mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
   mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
 
-retina_plus_group <- tsne_50 %>% filter(X1 > 17, X1 < 50, X2 < -15, X2 > -50)
-retina_plus_group <- bind_rows(retina_plus_group, tsne_50 %>% filter(X1 > 35))
-dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 2)
+retina_plus_group <- tsne_50 %>% filter(X1 > 12, X1 < 46, X2 < 35, X2 > -30)
+#retina_plus_group <- bind_rows(retina_plus_group, tsne_50 %>% filter(X1 > 12))
+dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 4)
 
 retina_plus_group$Cluster <- dbscan_cluster$cluster
 col1 = 'X1'
