@@ -7,7 +7,7 @@ library(colorspace)
 
 load('data/data_pull.Rdata')
 tsne_50 <- tsne_50 %>% filter(!grepl('MGS', Sub_Tissue)) %>% # remove AMD
-  filter(!(Tissue == 'Retina' & X1 < 0)) # remove one retina outlier
+  filter(!(Tissue == 'Retina' & X2 > 20), Tissue != "Choroid Plexus") # remove one retina outlier
 
 dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
 tsne_50$Cluster <- dbscan_cluster$cluster
@@ -24,7 +24,7 @@ center_samples <- tsne_50 %>% left_join(.,core_tight_2019)  %>%
   mutate(Distance = (!!sym(col1)-C1)+(!!sym(col2)-C2)) %>%
   group_by(Cluster) %>%
   dplyr::slice(which.min(Distance)) %>%
-  dplyr::slice(1) %>% 
+  dplyr::slice(1) %>%
   .[['sample_accession']]
 
 # cluster stats
@@ -47,9 +47,9 @@ tsne_50_prep <- tsne_50 %>% select(-Origin) %>%
   mutate(Label = paste(Cluster, Cluster_Tissues,sep=': ')) %>%
   mutate(Label = ifelse(sample_accession %in% center_samples, Label, ""))
 
-retina_plus_group <- tsne_50 %>% filter(X1 > 12, X1 < 46, X2 < 35, X2 > -30)
+retina_plus_group <- tsne_50 %>% filter(X1 > -1, X1 < 50, X2 < 10, X2 > -40, Tissue != 'RPE')
 #retina_plus_group <- bind_rows(retina_plus_group, tsne_50 %>% filter(X1 > 12))
-dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 4)
+dbscan_cluster <- dbscan(retina_plus_group %>%  select(X1, X2) ,  minPts = 3, eps = 5)
 
 retina_plus_group$Cluster <- dbscan_cluster$cluster
 col1 = 'X1'
@@ -92,6 +92,7 @@ tsne_zoom <- retina_plus_group_prep  %>%
                            TRUE ~ Tissue),
          Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label),
          Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE','GTEx'))) %>%
+  filter()
   mutate( zoom = TRUE )
 
 # https://cran.r-project.org/web/packages/ggplot2/vignettes/extending-ggplot2.html
@@ -122,8 +123,8 @@ zoom_plot <- tsne_50_prep %>%
   rowwise() %>% 
   mutate(Age = as.numeric(Age_Days)) %>% 
   mutate(Origin = as.character(Origin)) %>% 
-  mutate(Origin = case_when(Age < 30 ~ 'Organoid < 30 days',
-                            Age > 30 ~ 'Organoid > 30 days',
+  mutate(Origin = case_when(Age < 30 & Origin == 'Organoid' ~ 'Organoid < 30 days',
+                            Age > 30 & Origin == 'Organoid' ~ 'Organoid > 30 days',
                             TRUE ~ Origin)) %>% 
   mutate(Origin=factor(Origin, levels=c('Adult Tissue', 'Fetal Tissue', 'Stem Cell', 'Cell Line', 'Organoid < 30 days', 'Organoid > 30 days')),
          Tissue = case_when(sample_accession == 'SRS1572426' ~ 'Retina',
@@ -133,7 +134,7 @@ zoom_plot <- tsne_50_prep %>%
          Group = case_when(study_accession == 'SRP012682' ~ 'GTEx',
                            TRUE ~ Tissue),
          Label = case_when(grepl('^0', Label) ~ '', TRUE ~ Label)) %>% 
-  mutate(Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE','GTEx'))) %>% 
+  mutate(Group = factor(Group, levels = c('Cornea', 'ESC', 'Lens', 'Retina', 'RPE', 'GTEx'))) %>% 
   ggplot(aes(x=X1,y=X2)) +
   scale_shape_manual(values=c(0:20,35:50)) +
   #geom_point(size=8, alpha=0.2, aes(colour=Group)) +
@@ -145,7 +146,7 @@ zoom_plot <- tsne_50_prep %>%
   geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
   
   custom_col + 
-  scale_fill_manual(values = c('#3b96e5', '#8ec4f2', '#7be276')) +
+  scale_fill_manual(values = c('#7be276', '#8ec4f2', '#8ec4f2', '#7be276')) +
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), ncol=2),
          shape = guide_legend(ncol =2 )) +
@@ -153,7 +154,7 @@ zoom_plot <- tsne_50_prep %>%
         axis.text.y = element_text(size = 6),
         text = element_text(size = 6),
         aspect.ratio = 0.5)
-svg('figures_and_tables/zoom_plot.svg', width = 4, height = 4)
+svg('figures_and_tables/zoom_plot.svg', width = 4, height = 4, family = 'sans')
 zoom_plot
 dev.off()
 zoom_svg <- ggdraw() + draw_image(magick::image_read_svg('figures_and_tables/zoom_plot.svg', width = 1800, height =1800))
