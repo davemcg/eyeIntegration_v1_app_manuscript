@@ -146,7 +146,7 @@ zoom_plot <- tsne_50_prep %>%
   geom_label_repel(data=tsne_zoom,size = 2, aes(label=Label), alpha=0.7, box.padding = unit(0.3, "lines"), force = 10) + 
   
   custom_col + 
-  scale_fill_manual(values = c('#7be276', '#8ec4f2', '#8ec4f2', '#7be276')) +
+  scale_fill_manual(values = c('#7be276', '#8ec4f2', '#daa0ef')) +
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), ncol=2),
          shape = guide_legend(ncol =2 )) +
