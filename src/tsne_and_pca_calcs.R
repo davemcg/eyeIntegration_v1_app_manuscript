@@ -3,7 +3,7 @@ library(pool)
 library(RSQLite)
 library(dbscan)
 library(ggrepel)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '~/Desktop/eyeIntegration_human_expression_2019_01.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/ARC168/eyeIntegration_app/www/2019/EiaD_human_expression_2019_05.sqlite')
 core_tight <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble() %>% select(-run_accession) %>% unique()
 anno <- gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()
 tpm_gene <- gene_pool_2019 %>% tbl('lsTPM_gene') %>% as_tibble() %>%  spread(sample_accession, value)
@@ -16,7 +16,7 @@ eye_samples <- core_tight %>%
   .[['sample_accession']]
 
 kept_samples <- core_tight %>%
-  filter(Kept == 'Kept') %>% 
+  filter(Kept == 'Kept', Tissue != 'Choroid Plexus') %>% 
   pull(sample_accession)
 
 
@@ -25,23 +25,29 @@ eye_TPM <- tpm_gene[tpm_gene %>% pull(ID) %in% (anno %>% filter(gene_type == 'pr
 # all that pass QC
 TPM <- tpm_gene[tpm_gene %>% pull(ID) %in% (anno %>% filter(gene_type == 'protein_coding') %>% pull(ID) %>% unique()), kept_samples] 
 
+# use tissue as covariate
+# eye_TPMc <- limma::removeBatchEffect(log2(eye_TPM+1), core_tight %>% filter(sample_accession %in% colnames(eye_TPM)) %>% pull(Tissue))
+# TPMc <- limma::removeBatchEffect(log2(TPM+1), core_tight %>% filter(sample_accession %in% colnames(TPM)) %>% pull(Tissue))
+
+
 plot_maker <- function(df, algorithm = 'pca', dbscan_eps = 2.5){
   # keep only 3000 most variable genes
   variance <- apply(df, 1, var, na.rm=TRUE) 
   df$variance <- variance
-  high_var_TPM <- df %>% arrange(variance) %>% tail(3000) %>% select(-variance)
+  high_var_TPM <- df %>% arrange(variance) %>% select(-variance)
   
   variance <- apply(df, 1, var, na.rm=TRUE) 
   df$variance <- variance
-  high_var_TPM <- df %>% arrange(variance) %>% tail(3000) %>% select(-variance)
+  high_var_TPM <- df %>% arrange(variance)  %>% select(-variance)
+  
   
   if (algorithm == 'pca'){
-    dimRed_out <- prcomp(as.matrix(log2(t(high_var_TPM)+1)))
+    dimRed_out <- prcomp(as.matrix((t(high_var_TPM))))
     dimRed_plot <- data.frame(dimRed_out$x)
     col1 = 'PC1'
     col2 = 'PC2'
   } else if (algorithm == 'tsne'){
-    dimRed_out <- Rtsne::Rtsne(as.matrix(log2(t(high_var_TPM)+1)),perplexity = 50, check_duplicates = FALSE, theta=0.0)
+    dimRed_out <- Rtsne::Rtsne(as.matrix((t(high_var_TPM))),perplexity = 50, check_duplicates = FALSE, theta=0.0)
     dimRed_plot <- data.frame(dimRed_out$Y)
     col1 = 'X1'
     col2 = 'X2'
@@ -89,10 +95,10 @@ plot_maker <- function(df, algorithm = 'pca', dbscan_eps = 2.5){
   dimRed_plot_prep
 }
 
-dimRed_plot_prep_eye_pca <- plot_maker(eye_TPM, 'pca', 12)
-dimRed_plot_prep_eye_tsne <- plot_maker(eye_TPM, 'tsne', 2.5)
+dimRed_plot_prep_eye_pca <- plot_maker(log2(eye_TPM+1), 'pca', 12)
+dimRed_plot_prep_eye_tsne <- plot_maker(log2(eye_TPM+1), 'tsne', 2.5)
 
-dimRed_plot_prep_pca <- plot_maker(TPM, 'pca', 9)
-dimRed_plot_prep_tsne <- plot_maker(TPM, 'tsne', 2.5)
+dimRed_plot_prep_pca <- plot_maker(log2(TPM+1), 'pca', 9)
+dimRed_plot_prep_tsne <- plot_maker(log2(TPM+1), 'tsne', 2.5)
 
 save(dimRed_plot_prep_eye_pca, dimRed_plot_prep_eye_tsne, dimRed_plot_prep_pca, dimRed_plot_prep_tsne, file = 'data/dimRed_plot_data.Rdata')
