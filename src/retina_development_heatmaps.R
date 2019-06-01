@@ -4,7 +4,7 @@ library(tidyverse)
 library(circlize)
 library(pool)
 library(RSQLite)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/Arges/eyeIntegration_app/www/2019/EiaD_human_expression_2019_03.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2019/EiaD_human_expression_2019_08.sqlite')
 
 rgc <- c('GAP43', 'POU4F1', 'ISL1', 'ATOH7','SHH','DLX2', 'POU4F2', 'POU4F3', 'NEFL', 'SNCG')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
