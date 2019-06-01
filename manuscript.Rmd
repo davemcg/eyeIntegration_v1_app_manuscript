@@ -466,8 +466,9 @@ cat("</div>")
 metadata_cap <- supTab_cap(name='metadataTable', caption = 'Full metadata for 20 random eye samples. Full metadata available as supplementary file.')
 set.seed(1534)
 cat("<div id=\"tbl:metadataTable\">")
-flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_n(20) %>% left_join(mapping_rate, by = 'sample_accession') %>% 
-            rename(Mapping_Rate = `Mapping Rate`)) %>% 
+flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_n(20)) %>% 
+            #left_join(mapping_rate, by = 'sample_accession') %>% 
+    #        rename(mapping_rate = `Mapping Rate`)) %>% 
   font(fontname = 'Linux Libertine O', part = 'all') %>% 
   fontsize(size = 5) %>% 
   width(width = c(0.5,0.5,0.5,2,1,0.5,0.5,0.5,0.5,0.5,0.5))
