@@ -175,7 +175,7 @@ While t-SNE is a powerful algorithm for grouping samples, it is not consistent f
 ```{r tsne, fig.height = 15, fig.width = 20, echo = F, message = F, fig.cap=tsne_cap}
 tsne_cap <- fig_cap(name='tSNE', caption = 't-SNE two-dimensional transcriptome profiles by sample demonstrate effective quality control and transcriptome processing. Colors match different tissue types and shapes of points define the origin of the tissues.')
 
-tsne_50 <- tsne_50 %>% filter(Tissue != 'Choroid Plexus', !(Tissue == 'Retina' & X2 > 20))
+tsne_50 <- tsne_50 %>% filter(Tissue != 'Choroid Plexus', !grepl('MGS', Sub_Tissue))
 dbscan_cluster <- dbscan(tsne_50 %>% select(X1, X2),  minPts = 3, eps = 2.5)
 tsne_50$Cluster <- dbscan_cluster$cluster
 col1 = 'X1'
@@ -356,6 +356,8 @@ mapping_stats <- core_tight_2019 %>% left_join(mapping_rate) %>% pull(`Mapping R
 mapping_rate_cap <- supFig_cap(name='mapping_rate_cap', caption = paste0('Salmon mapping rate for each sample, grouped by tissue type. 1st quartile mapping rate is ', mapping_stats$q1, '%, median is ', mapping_stats$median, '%, mean is ', mapping_stats$mean, '%, and third quartile is ', mapping_stats$q3, '%.'))
 core_tight_2019 %>% 
   left_join(mapping_rate, by = 'sample_accession') %>% 
+  mutate(Tissue = case_when(grepl('MGS', Sub_Tissue) ~ 'Retina MGS',
+                            TRUE ~ Tissue)) %>% 
   ggplot(aes(x=Tissue, y = `Mapping Rate`)) + 
   ggbeeswarm::geom_quasirandom() + 
   theme_minimal() + 
