@@ -57,7 +57,9 @@ load('data/dimRed_plot_data.Rdata')
 # run 'src/viewing_stats.Rmd'
 load('data/visitor_stats.Rdata')
 # write supplementary file for metadata
-# write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
+write_csv(core_tight_2019, path = 'supplementary_materials/supplementary_files__metadata.csv')
+# power calculations
+load('data/power_data.Rdata')
 
 core_tight_2019 <- core_tight_2019 %>% mutate(Origin = case_when( grepl('Transformed', Sub_Tissue, ignore.case = T) ~ 'Cell Line',
                                                                   grepl('Fetal', Sub_Tissue) ~ 'Fetal Tissue',
@@ -122,7 +124,7 @@ This manuscript's figures, tables, and most numbers, are all created and laid ou
 
 # Results
 
-## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sub-tissue types along with `r ((core_tight_2019 %>% filter(Kept == 'Kept') %>% pull(study_accession) %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new human eye RNA-seq studies, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new samples, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(Sub_Tissue)) %>% unique() %>% length()) - 1` eye sub-tissue types
+## EiaD 2019 contains `r core_tight_2019 %>% filter(Kept == 'Kept') %>% filter(study_accession == 'SRP012682') %>% pull(Sub_Tissue) %>% table() %>% length()` GTEx body sub-tissue types along with `r ((core_tight_2019 %>% filter(Kept == 'Kept') %>% pull(study_accession) %>% unique()) %in% (core_tight_2017$study_accession %>% unique())) %>% table() %>% as_tibble() %>% slice(1) %>% pull(n)` new human eye RNA-seq studies, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(sample_accession)) %>% length()) - core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow()` new eye samples, `r ((core_tight_2019 %>% filter(Kept=='Kept', study_accession != 'SRP012682') %>% pull(Sub_Tissue)) %>% unique() %>% length()) - 1` total eye sub-tissue types
 
 ```{r, echo = F}
 # set color levels
@@ -132,18 +134,28 @@ custom_fill <- scale_fill_manual(values = color)
 custom_col <- scale_colour_manual(values = color)
 ```
 
-```{r tissueCountsBarPlot, fig.height = 4, fig.cap=tissueCountsBarPlot_cap, echo=F}
-tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption =  paste0('Substantial increase in eye tissue count and type from 2017 (', core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow(), ', lighter color) to 2019 (', core_tight_2019 %>% filter(Kept=="Kept", study_accession != 'SRP012682') %>% nrow(),', darker color) EiaD. We also improved the metadata labelling, the cornea samples (yellow) now delineates endothelial and epithelial tissues and the retina samples (teal) distinguish retina organoid and retinal ganglion cell (RGC) from stem cells.'))
+```{r tissueCountsBarPlot, fig.height = 5, fig.width = 6, fig.cap=tissueCountsBarPlot_cap, echo=F}
+tissueCountsBarPlot_cap <- fig_cap(name='tissueCountsBarPlot', caption =  paste0('Substantial increase in eye tissue count and type from 2017 (', core_tight_2017 %>% filter(study_accession != 'SRP012682') %>% nrow(), ', lighter color) to 2019 (', core_tight_2019 %>% filter(Kept=="Kept", study_accession != 'SRP012682') %>% nrow(),', darker color) EiaD. We also improved the metadata labelling, the cornea samples (yellow) now delineates endothelial and epithelial tissues and the retina samples (orange) distinguish retina organoid and retinal ganglion cell (RGC) from stem cells.'))
 
 core_both <- bind_rows(core_tight_2019 %>% mutate(Version = '2019 EiaD') %>% filter(Kept == 'Kept'), core_tight_2017 %>% mutate(Version = '2017') %>% mutate(Sub_Tissue = gsub('_',' - ', Sub_Tissue))) %>% unique()
 
 
-core_both %>% filter(grepl('Retina|Cornea|Lens|RPE', Tissue)) %>% unique() %>% 
-  #mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>%
+core_both  %>% mutate(Tissue = case_when(study_accession == 'SRP012682' ~ 'GTEx', TRUE ~ Tissue),
+                      Sub_Tissue = case_when(study_accession == 'SRP012682' ~ 'GTEx', TRUE ~ Sub_Tissue),
+                      Sub_Tissue = case_when(grepl('MGS', Sub_Tissue) ~ 'Retina - Adult AMD Tissue', TRUE ~ Sub_Tissue)) %>% 
+                         filter(grepl('GTEx|Retina|Cornea|Lens|RPE', Tissue)) %>% unique() %>% 
+    #mutate(Sub_Tissue = case_when(sample_accession == 'SRS1955479' ~ 'Retina - Adult Tissue', TRUE ~ Sub_Tissue)) %>%
   group_by(Tissue, Sub_Tissue, Version) %>% summarise(Count=n()) %>% 
   mutate(Dataset = Version) %>% 
-  ggplot(aes(x=Sub_Tissue, y=Count, fill = Tissue, alpha = Dataset)) + geom_bar(stat = 'identity', position = 'dodge') + theme_minimal() + theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3))  + xlab('') +
-  ylab('Count of Samples') + scale_alpha_manual(values = c(0.5,1)) +
+  ggplot(aes(x=Sub_Tissue, y= log2(Count), fill = Tissue, alpha = Dataset, label = Count, group = Dataset)) + 
+  geom_bar(stat = 'identity', position = position_dodge(width = NULL)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3))  + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+  xlab('') + 
+  geom_label_repel(stat = 'identity', position = position_dodge(width = 0.9), size = 4, ylim =c(3, NA)) + 
+  ylab('log2(Count of Samples)') + scale_alpha_manual(values = c(0.5,1)) +
+  #coord_cartesian(ylim = c(0,11)) +
   theme(text = element_text(size = 10)) +
   custom_fill
 ```
@@ -269,7 +281,7 @@ regulartable(table) %>%
   width(width = c(1,1,1,2)) %>% 
   flextable::align(align = "center",part = "header") %>% 
   flextable::align(align='center') %>% 
-  fontsize(size = 10) %>% 
+  flextable::fontsize(size = 10) %>% 
   font(fontname = 'Linux Libertine O', part = 'all')
 # Output Caption (* * for italics)
 cat(paste0("\n*",tableSampleCounts_cap,"*\n"))
@@ -472,7 +484,7 @@ flextable(core_tight_2019 %>% filter(study_accession != 'SRP012682') %>% sample_
             #left_join(mapping_rate, by = 'sample_accession') %>% 
     #        rename(mapping_rate = `Mapping Rate`)) %>% 
   font(fontname = 'Linux Libertine O', part = 'all') %>% 
-  fontsize(size = 5) %>% 
+  flextable::fontsize(size = 5) %>% 
   width(width = c(0.5,0.5,0.5,2,1,0.5,0.5,0.5,0.5,0.5,0.5))
 #Output Caption (* * for italics)
 cat(paste0("\n*",metadata_cap,"*\n"))

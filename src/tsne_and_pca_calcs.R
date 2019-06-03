@@ -3,7 +3,7 @@ library(pool)
 library(RSQLite)
 library(dbscan)
 library(ggrepel)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app//www/2019/EiaD_human_expression_2019_05.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/ARC168/eyeIntegration_app//www/2019/EiaD_human_expression_2019_09.sqlite')
 core_tight <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble() %>% select(-run_accession) %>% unique()
 anno <- gene_pool_2019 %>% tbl('gene_IDs') %>% as_tibble()
 tpm_gene <- gene_pool_2019 %>% tbl('lsTPM_gene') %>% as_tibble() %>%  spread(sample_accession, value)
@@ -16,7 +16,7 @@ eye_samples <- core_tight %>%
   .[['sample_accession']]
 
 kept_samples <- core_tight %>%
-  filter(Kept == 'Kept', Tissue != 'Choroid Plexus') %>% 
+  filter(Kept == 'Kept', Tissue != 'Choroid Plexus', !grepl('MGS', Sub_Tissue)) %>% 
   pull(sample_accession)
 
 

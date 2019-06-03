@@ -4,7 +4,7 @@ library(tidyverse)
 library(circlize)
 library(pool)
 library(RSQLite)
-gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/McGaughey_S/eyeIntegration_app/www/2019/EiaD_human_expression_2019_08.sqlite')
+gene_pool_2019 <- dbPool(drv = SQLite(), dbname = '/Volumes/ARC168/eyeIntegration_app/www/2019/EiaD_human_expression_2019_09.sqlite')
 
 rgc <- c('GAP43', 'POU4F1', 'ISL1', 'ATOH7','SHH','DLX2', 'POU4F2', 'POU4F3', 'NEFL', 'SNCG')
 progenitor <- c('VSX2','SOX2','SOX9','ASCL1','SFRP2','HES1','LHX2','PRTG','LGR5','ZIC1','DLL3','GLI1','FGF19','LIN28B')
@@ -17,7 +17,7 @@ all_markers <- c(rgc, pr, progenitor, cone, rod) %>% unique()
 
 core_tight_2019 <- gene_pool_2019 %>% tbl('metadata') %>% as_tibble()
 
-gene <- aman
+#gene <- aman
 
 # function to split by experiment / study / type -------
 plotter_split <- function(gene_vector, annotation = F, breaks = c(0,5,10,15)) {
@@ -242,7 +242,7 @@ plotter_merge <- function(gene_vector, annotation = F, link = NA, breaks = c(0,5
   ht <- Heatmap(log2(y+1), cluster_columns = F, 
                 col = colorRamp2(breaks = breaks, colors = viridis(length(breaks))),
                 clustering_distance_rows = "euclidean", 
-                name = gpar('log(TPM + 1)', fontfamily = 'Linux Libertine O'),
+                name = ('log(TPM + 1)'),
                 #clustering_distance_columns = "euclidean", 
                 #top_annotation = ha_column, 
                 
@@ -263,7 +263,8 @@ dev.off()
 
 
 marker_merge_plot <- plotter_merge(all_markers, annotation = T)
-draw(marker_split_plot +marker_merge_plot, padding = unit(c(15,15,15,15),"mm"))
+
+draw(marker_split_plot + marker_merge_plot, padding = unit(c(15,15,15,15),"mm"))
 
 # most related to gene to each of all_makers by euclidean distance
 # see euc_dist.R
