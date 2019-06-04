@@ -13,6 +13,9 @@ bibliography: eyeIntegration_v1_app_manuscript.bib
 csl: investigative-ophthalmology-and-visual-science.csl
 ---
 
+Note to all reviewers:
+Reviewer 2 asked why we had not included the Ratnapriya et al. large AMD retina RNA-seq study. The reason was because the data was made available after our last data pull. While addressing the reviewer criticisms we decided to pull new GTEx samples along with all eye tissue datasets as of April 2019. This will change all sample counts in the document. We **have** corrected the incorrect code that generated the wrong sample numbers.
+
 ```
 AE Comments to Author:
 The manuscript "Eye in a Disk: eyeIntegration human pan-eye and body transcriptome database version 1.0" is an interesting compilation of information from many datasets. The reviewers have a number of comments and queries for consideration. 
@@ -25,9 +28,7 @@ This manuscript describes a database on genes from tissues of the eye into an ac
 1. Figure 4 is not readable. If this is going to be useful illustration of potential, it would be better to do each of the 5 subparts as a separate figure. Similarly, Figure 5 would be better separated into 2 figures with increased readability.
 2. Minor typos in the manuscript, but otherwise clearly written.
 ```
-We have reduce the number of panels in Figure 4 to two and moved the remaining panels to a supplementary figure.
-
-Figure 5 has been split into two separate figures. 
+We have reduced the number of panels in Figure 4 to two and moved the remaining panels to a new supplementary figure (Supplemental Figure 7). We would prefer to keep Figure 5 as one figure, especially as we envisioned this being a fairly short manuscript and having five figures in the main body is ... a lot. 
 
 ```
 Reviewer #1 (Comments for the Author (Required)):
@@ -39,14 +40,14 @@ Building on the eyeIntegration web resource released in 2017, the authors re-wro
 1) The authors quantified expression "across 42 gene and 46 transcript types" (supplemental table 2). Please describe the difference or relationship between of the "gene" and "transcript" types. Are they pretty much overlapping to each other?
 ```
 
-Supplmental table 2 is unnecessarily confusing. There are no differences between the "gene type" whether at the gene or transcript level. We have added the Gencode description of the biotypes to the table and given the counts as "Gene Counts" or "Transcript Counts" for each biotype. 
+Supplemental Table 2 is unnecessarily confusing. There are no differences between the "gene type" whether at the gene or transcript level. We have added the Gencode description of the biotypes to the table (Supplementary Table 2) and given the counts as "Gene Counts" or "Transcript Counts" for each biotype. 
 
 
 ```
 2) "Figure 2: Raw RNA seq data ....... Visualizations across 63 tissues": are these 63 tissues the same as described in the abstract "44 body and 14 eye tissues", what are the extra 5 [63-(44+14)]? 
 ```
 
-We originally had 63 tissues - several were removed as they had an insufficient number of samples after quality control. I've updated the text for this figure legend to reflect the final number (58). 
+We originally had 63 tissues - several were removed as they had an insufficient number of samples after quality control. I've updated the text for this figure legend to reflect the number after removing samples for QC reasons. 
 
 ```
 3) Line 179: "To create a high quality final dataset across the 1311 initial samples (suppl fig and table 2)". Are these "1311 initial samples" the same as "371 human eye tissue samples and 848 GTEx" described on line 158-159. If so, 371+848 ≠ 1311? 
@@ -55,9 +56,9 @@ We originally had 63 tissues - several were removed as they had an insufficient 
 ```
 4) In Figure 3, the colors of ESC and lens, retina and RPE are too close to each other, and hard to be distinguished. More distinctive, different colors would help. What is the total number of clusters? A table listing all the clusters and the composition of each cluster should be included as a supplemental table. 
 ```
-Updated colors.
+The colors were poorly designed. We have updated the color scheme. 
 
-There are 33 total clustesr. We have added a supplementary table summarizing the Sub Tissue composition of each one. 
+There are 33 total clusters. We have added a supplementary table summarizing the Sub Tissue composition of each one. 
 
 tsne_50 %>% group_by(Cluster, Sub_Tissue) %>% summarise(Count = n()) %>%  mutate(Sub_Tissue = trimws(Sub_Tissue))  %>% rename(`Sub Tissue` = Sub_Tissue)  %>% flextable::regulartable()
 ```
