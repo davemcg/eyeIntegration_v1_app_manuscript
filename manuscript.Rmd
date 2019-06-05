@@ -159,7 +159,7 @@ core_both  %>% mutate(Tissue = case_when(study_accession == 'SRP012682' ~ 'GTEx'
   theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.3))  + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
   xlab('') + 
-  geom_label_repel(stat = 'identity', position = position_dodge(width = 0.9), size = 4, ylim =c(3, NA)) + 
+  geom_label_repel(stat = 'identity', position = position_dodge(width = 0.9), size = 4, ylim =c(3, NA), show.legend = FALSEx) + 
   ylab('log2(Count of Samples)') + scale_alpha_manual(values = c(0.5,1)) +
   #coord_cartesian(ylim = c(0,11)) +
   theme(text = element_text(size = 10)) +
