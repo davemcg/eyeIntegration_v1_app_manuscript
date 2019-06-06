@@ -14,7 +14,7 @@ csl: investigative-ophthalmology-and-visual-science.csl
 ---
 
 Note to all reviewers:
-Reviewer 2 asked why we had not included the Ratnapriya et al. large AMD retina RNA-seq study. The reason was because the data was made available after our last data pull. While addressing the reviewer criticisms we decided to pull new GTEx samples along with all eye tissue datasets as of April 2019. This will change all sample counts in the document. We **have** corrected the incorrect code that generated the wrong sample numbers.
+Reviewer 2 asked why we had not included the Ratnapriya et al. large AMD retina RNA-seq study. The reason was because the data was made available after our last data pull. While addressing the reviewer criticisms we decided to pull new GTEx samples along with all eye tissue datasets as of May 2019. This will change all sample counts in the document. We **have** corrected the incorrect code that generated the wrong sample numbers.
 
 ```
 AE Comments to Author:
@@ -40,46 +40,43 @@ Building on the eyeIntegration web resource released in 2017, the authors re-wro
 1) The authors quantified expression "across 42 gene and 46 transcript types" (supplemental table 2). Please describe the difference or relationship between of the "gene" and "transcript" types. Are they pretty much overlapping to each other?
 ```
 
-Supplemental Table 2 is unnecessarily confusing. There are no differences between the "gene type" whether at the gene or transcript level. We have added the Gencode description of the biotypes to the table (Supplementary Table 2) and given the counts as "Gene Counts" or "Transcript Counts" for each biotype. 
+The original design of Supplemental Table 2 was unnecessarily confusing. There are no differences between the "gene type" whether at the gene or transcript level. We have reworked the table, adding the Gencode description of the biotypes to the table (Supplementary Table 2, line 400) and given the counts as "Gene Counts" or "Transcript Counts" for each biotype. 
 
 
 ```
 2) "Figure 2: Raw RNA seq data ....... Visualizations across 63 tissues": are these 63 tissues the same as described in the abstract "44 body and 14 eye tissues", what are the extra 5 [63-(44+14)]? 
 ```
 
-We originally had 63 tissues - several were removed as they had an insufficient number of samples after quality control. I've updated the text for this figure legend to reflect the number after removing samples for QC reasons. 
+We originally had 63 tissues - several were removed as they had an insufficient number of samples after quality control. I've updated the text for this figure legend to reflect the number after removing samples for QC reasons. The new numbers are 19 eye and 54 body tissues (which again, are post-QC). There are a few tissue types which entirely drop out after QC. For example, we have a small number of eye lid tissues that all failed QC. 
 
 ```
 3) Line 179: "To create a high quality final dataset across the 1311 initial samples (suppl fig and table 2)". Are these "1311 initial samples" the same as "371 human eye tissue samples and 848 GTEx" described on line 158-159. If so, 371+848 ≠ 1311? 
 ```
-1311 went into the pipeline. 30 GTEx and 62 eye samples were removed for a variety of QC reasons (see sup table). 371 + 848 + 30 + 62 = 1311. This was made more clear in the text. ** PUT IN NEW QUOTE AFTER KNITTING WORD DOCUMENTS** 
+916 eye and 1,375 GTEx samples now go into the pipeline. Table 1 (line 235) gives the counts pre and post-QC for the cornea, ESC, lens, retina, and RPE tissues. Eye lid and retinal endothelium were initially included, but all samples failed QC. For GTEx were go from 1,375 to 1,314 after QC (Supplemental Table, line 397)
+
 ```
 4) In Figure 3, the colors of ESC and lens, retina and RPE are too close to each other, and hard to be distinguished. More distinctive, different colors would help. What is the total number of clusters? A table listing all the clusters and the composition of each cluster should be included as a supplemental table. 
 ```
-The colors were poorly designed. We have updated the color scheme. 
+You are correct - the originals colors were poorly designed. We have updated the color scheme. We hope the update is more clear. 
 
-There are 33 total clusters. We have added a supplementary table summarizing the Sub Tissue composition of each one. 
+There are 37 total clusters (up from 33 in the last submission, as we have some more GTEx tissue types and the AMD retina study). We have added a supplementary table (line 404, Supplemental Table 4) summarizing the Sub Tissue composition of each one. 
 
-tsne_50 %>% group_by(Cluster, Sub_Tissue) %>% summarise(Count = n()) %>%  mutate(Sub_Tissue = trimws(Sub_Tissue))  %>% rename(`Sub Tissue` = Sub_Tissue)  %>% flextable::regulartable()
 ```
 5) Line 208, ".... Then genes (or transcripts), then tissues." The "genes" should be "gene IDs by official gene name". The tables derived from "expression" search (e.g. Fig.4A) should be further annotated, e.g. define what are "decile", "log2(PMT+1)", etc. 
 ```
-HGNC gene names
+Line 208 now reads "The user first selects either the 2017 or 2019 gene or transcript EiaD dataset, then Hugo Gene Nomeclature Committee (HGNC) genes names (or ENSEMBL transcripts), then tissues" (it is now line 247). We define decile, log2(TPM + 1) in the Figure 4 text (lines 255-258) as follows "Figure 4: Screenshots from eyeIntegration web app. A. Pan-tissue gene expression box plots with accompanying data tables. The data tables display the rank (lower is more highly expressed) of each gene in each sub tissue, the decile of the rank (10 is the highest decile of expression), and the mean gene’s log2(TPM + 1) score for each sub tissue. B. Heatmap visualization."
 ```
 6) Since this dataset and web app is built in the way that "future sample updates can be streamlined in with less effort", perhaps advice on how future deep sequencing and single cell seq data should be organized for streamline updates should be added to the discussion.
 ```
 
-Add section to suggest ways researchers can faciliate addition of their data to eyeIntegration. 
-
-1. Contact us directly (mcgaugheyd@mail.nih.gov) 
-2. Deposit data on SRA
-3. Clear, descriptive, consistent, metadata for each sample (in the sample_attribute section) 
+We added a short section to the discussion giving some tips on how to help with future updates to EiaD from lines 
  
 ```
 7) Many typos and some unfished edit should be corrected, e.g. Line 285 "citation" should be added!
+```
+Fixed the "CITATION" that was missing. We re-read several times and have fixed many typos. 
 
-
-
+```
 Reviewer #2 (Comments for the Author (Required)):
 
 In this manuscript the authors describe aggregation of RNA-seq data from 371 ocular tissue samples into an "Eye in a Disk (EiaD)" database. Samples from adult and fetal retina, retinal pigment epithelium (RPE), cornea, lens, induced pluripotent stem cell (iPSC) derived retinal organoids are included. Data from two single cell RNA-seq (scRNA-seq) datasets generated from developing mouse retina are also included. The aggregated data are presented for general use via the eyeIntegration web interface. Data from 844 Genotype-Tissue Expression (GTEx) project samples derived from 44 different tissues are included for reference. To generate the EiaD database, data from RNA-seq studies that were available in the NIH Short Read Archive (SRA) were re-analyzed using the alignment free quantification tool Salmon, using the Gencode transcriptome index as a reference. Transcripts with low levels of expression (<2 TPM) were removed from the resulting dataset, as were samples with low calculated mapping rates. The resulting data were stored in an SQLite database. By using a workflow management system called SnakeMake, the authors ensure that reproducibility is maintained with each iteration of the data, facilitating sample tracking and updates of the database and portal, as new transcriptome data for the eye and other tissues become available. The whole analysis pipeline is available via Github, as is the R package used to generate the eyeIntegration web application. 
