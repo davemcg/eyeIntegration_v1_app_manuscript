@@ -14,7 +14,7 @@ csl: investigative-ophthalmology-and-visual-science.csl
 ---
 
 Note to all reviewers:
-Reviewer 2 asked why we had not included the Ratnapriya et al. large AMD retina RNA-seq study. The reason was because the data was made available after our last data pull. While addressing the reviewer criticisms we decided to pull new GTEx samples along with all eye tissue datasets as of May 2019. This will change all sample counts in the document. We **have** corrected the incorrect code that generated the wrong sample numbers.
+Reviewer 2 asked why we had not included the Ratnapriya et al. large AMD retina RNA-seq study [@ratnapriyaRetinalTranscriptomeEQTL2019]. The reason was because the data was made available after our last data pull. While addressing the reviewer criticisms we decided to pull new GTEx samples along with all eye tissue datasets as of May 2019. This will change all sample counts in the document. We **have** corrected the incorrect code that generated the wrong sample numbers.
 
 ```
 AE Comments to Author:
@@ -120,9 +120,9 @@ cor(log2(both2 %>% pull(TPM) + 0.01), log2(both2 %>% pull(GTEX_TPM) + 0.01), met
 # pearson 0.89
 ```
 
-Zhang et al. (https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-017-4002-1) report a pearson cor R^2 with TPM of 0.89 and 0.93 between alignment free (salmon/kallisto) methods compared to alignment-based methods (STAR/REM) [@zhangEvaluationComparisonComputational2017]. As GTEx used an alignment-based approach (and a different reference genome - we use GRCh38, GTEx uses GRCh37) and we length scale our TPM values (GTEx does note) we feel that this is a reasonable result. 
+To ensure there are no substantial differences in quantification of gene TPM values, we calculated the $R^2$ between GTEX and EiaD generated TPM values for our shared GTEx samples (see methods); we computed an $R^2$ of 0.89. Zhang et al. report that RNA-seq quantifications done between alignment-free methods (used in EiaD) and alignment-based methods (used by GTEx) get a $R^2$ ranging from 0.89 to 0.93 [@zhangEvaluationComparisonComputational2017]. As Zhang et al. compared quantification methods with identical gene references (we use Gencode GRCh38 gene models and GTEx uses hg19) and did not scale TPM score differently, our result falls in line with expectations. 
 
-We have added a section to our methods and results section discussing this briefly (lines 126-129, 227-233). 
+We have added a section to our methods and results section discussing this briefly (lines 126-129, 227-232). 
 
 
 ```
@@ -137,7 +137,7 @@ The methods section for scRNA-seq procesesing reads "We use the processed gene c
 This question is also being asked because Salmon is an alignment-free method that performs light weight mapping of reads to transcript models and estimates expression levels of transcripts correcting for potential biases such as GC content. Given the limitations of transcript reconstruction from short RNA-seq reads, a commonly used approach to unify data from different studies, including GTEx, ENCODE, TopMed, and TCGA has been uniform realignment, gene expression quantification, and batch effect removal (e.g. Sci Data 2018 - DOI: 10.1038/sdata.2018.61). While Salmon has been reported to be among the top performing methods for transcript quantification, it also has limitations. For example, Salmon does not seem to perform as well for lowly expressed transcripts, and its efficacy can be affected by incompleteness of the gene/transcript annotation model or total number of isoforms per gene (BMC Genomics 18:583, 2017; Briefings in Bioinformatics 18: 260, 2017). It would be helpful to include information about the choice and use of this method in the manuscript.
 ```
 
-We have added a "limitations" section to the resulst section of the manuscript:
+We have added a "limitations" section to the results section of the manuscript:
 
 "Salmon quantification, while highly performant and accurate, has a higher variance when with lower read depth and with shorter transcripts [@zhangEvaluationComparisonComputational2017]. Extra care should be taken with comparisons with lower counts of samples (cornea, RGC) as smaller sample numbers decrease the confidence in differential expression. We recommend that if you wish to directly compare your RNA-seq sample quantifications with EiaD, you should not directly compare our TPM values with yours as there are many important variables that will differ. Instead run our Snakemake pipeline (https://www.github.com/davemcg/EiaD_build) and add your samples. Finally, we would like to remind any users that RNA-seq methods measure mRNA levels, but the functional unit is the protein; westerns are still the gold standard with which to evaluate expression and localization."
 
