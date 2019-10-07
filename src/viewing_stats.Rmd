@@ -15,20 +15,44 @@ Pull in IP addresses, filter to only keep IP addresses over 11 views (I think an
 library(tidyverse)
 library(rworldmap)
 library(ipstack)
-ipaddresses <- read_delim('~/Desktop/stats/eyeIntegration.stats', col_names = F, delim = '\\s+') %>% 
+ipaddresses <- read_delim('~/Desktop/email_eyeintegration_//eyeIntegration.stats', col_names = F, delim = '\\s+') %>% 
   separate(col = X1, into = c('IP Address', 'Page Views'), sep='\\s+') %>% 
   mutate(`Page Views` = as.numeric(`Page Views`)) %>%  
   filter(`Page Views` > 11)
 ```
 
-Total page view from May 2017 to November 2017
 ```{r}
-sum(ipaddresses$`Page Views`)
+files <- list.files('~/Desktop/email_eyeintegration_/', pattern = '*eml', full.names = TRUE)
+eml <- files %>% map(read_lines) 
+dates <- eml %>% 
+  map(grep, pattern = 'Date:', value =TRUE) %>% 
+  map(gsub, pattern = 'Date: \\w+, | \\d+:.*', replacement = '') %>% 
+  map(as.Date, format = "%d %b %Y") %>% 
+  map(as.character) %>% 
+  unlist() %>% 
+  as.Date()
+ip <- eml %>% 
+  map(grep, pattern = '^[[:digit:]]', value = TRUE) %>% 
+  map(str_split, pattern = '\\s+') %>% 
+  set_names(dates)
+
+empty_list <- ip %>% map(length) %>% unlist()
+empty_list <- empty_list != 0
+ip <- ip[empty_list]
+
+ip <- ip %>% map(enframe) %>% map(unnest_wider, value) %>% bind_rows(.id = 'Date')
+colnames(ip) <- c('Date', 'Name', 'IP', 'Pages')
+ip$Pages <- as.numeric(ip$Pages)
+```
+
+Total page views from May 2017 to Today
+```{r}
+sum(ip$Pages)
 ```
 
 Get latitude and longitude for all unique IPs (takes a few minutes to query)
 ```{r}
-unique_IP <- ipaddresses$`IP Address` %>% unique()
+unique_IP <- ip$IP %>% unique()
 ip_info <- list()
 for (i in unique_IP){
   ip_info[[i]] <- ip_lookup(i, ipstack_api_key = '7d06f26c4f0f61bd9edd20df0219f874', hostname = T)
@@ -43,9 +67,11 @@ latitudes <- ''
 longitudes <- ''
 cities <- ''
 countries <- ''
+hostname <- ''
 for (i in unique_IP){
   if (!is.null(ip_info[[i]]$country_name)){
   ips <- c(ips, ip_info[[i]]$ip)
+  hostname <- c(hostname, ip_info[[i]]$hostname)
   latitudes <- c(latitudes, ip_info[[i]]$latitude)
   longitudes <- c(longitudes, ip_info[[i]]$longitude)
   cities <- c(cities, ip_info[[i]]$city)
@@ -86,5 +112,16 @@ ggplot(data = geo_locate, aes(x = longitudes, y = latitudes, colour = countries)
   geom_point() + 
   theme_void() +
   scale_color_viridis_d()
-
 ```
+
+Page View over Time
+```{r}
+ip$Date <- as.Date(ip$Date)
+ip %>% 
+  filter(Pages > 11) %>% 
+  arrange(Date) %>% 
+  ggplot(aes(x=Date, y = cumsum(Pages)/10)) + 
+  geom_line() + cowplot::theme_cowplot()  + ylab("Cumulative Queries")
+```
+
+
